@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS G525 — Advanced Computer Networks Reading Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f8fb; --panel:#ffffff; --panel-2:#f1f3f8;
+    --text:#1a1d29; --muted:#636b7a; --border:#e4e7ee;
+    --accent:#4f46e5; --accent-2:#7c73f2; --accent-soft:#eeecfd;
+    --code-bg:#f1f2f8; --code-text:#4338ca;
+    --shadow:0 1px 2px rgba(20,22,36,.04), 0 8px 24px rgba(20,22,36,.06);
+    --radius:14px;
+    --header-h:60px;
+  }
+  html.dark{
+    --bg:#0e0f16; --panel:#161822; --panel-2:#1c1f2c;
+    --text:#e8e9f0; --muted:#9096a8; --border:#282b3a;
+    --accent:#8b85f7; --accent-2:#a29cff; --accent-soft:#211f3d;
+    --code-bg:#1c1e2c; --code-text:#b3aeff;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    padding-top:var(--header-h);
+    -webkit-font-smoothing:antialiased;
+    transition:background .2s ease,color .2s ease;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* progress bar */
+  #progress{position:fixed; top:0; left:0; height:3px; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); z-index:100; transition:width .1s linear}
+
+  /* top bar */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; height:var(--header-h);
+    background:var(--panel); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:14px; padding:0 18px; z-index:90;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:15px; color:var(--text)}
+  .brand:hover{text-decoration:none}
+  .brand .dot{width:9px; height:9px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+  .topbar .spacer{flex:1}
+  .icon-btn{
+    width:36px; height:36px; border-radius:10px; border:1px solid var(--border);
+    background:var(--panel-2); color:var(--text); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:background .15s;
+  }
+  .icon-btn:hover{background:var(--accent-soft)}
+  .menu-btn{display:none}
+
+  /* layout */
+  .layout{display:flex; max-width:1280px; margin:0 auto}
+  .sidebar{
+    width:280px; flex-shrink:0; position:sticky; top:var(--header-h);
+    height:calc(100vh - var(--header-h)); overflow-y:auto;
+    padding:22px 16px 40px; border-right:1px solid var(--border);
+  }
+  .sidebar::-webkit-scrollbar{width:6px}
+  .sidebar::-webkit-scrollbar-thumb{background:var(--border); border-radius:3px}
+
+  .search-wrap{position:relative; margin-bottom:18px}
+  #search{
+    width:100%; padding:10px 12px 10px 34px; border-radius:10px; border:1px solid var(--border);
+    background:var(--panel-2); color:var(--text); font-size:13px; font-family:inherit;
+  }
+  #search:focus{outline:2px solid var(--accent-soft); border-color:var(--accent)}
+  .search-wrap svg{position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:.5}
+
+  .nav-section{margin-bottom:4px}
+  .nav-title{
+    font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); margin:18px 0 8px; padding:0 4px;
+  }
+  .nav-section:first-of-type .nav-title{margin-top:0}
+  .nav-link{
+    display:block; padding:7px 10px; border-radius:8px; font-size:13.5px; color:var(--text);
+    line-height:1.35;
+  }
+  .nav-link:hover{background:var(--panel-2); text-decoration:none}
+
+  .chip-grid{display:flex; flex-wrap:wrap; gap:6px; padding:2px 4px 4px}
+  .lec-chip{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:34px; height:28px; padding:0 8px; border-radius:8px;
+    border:1px solid var(--border); background:var(--panel-2);
+    font-size:12.5px; font-weight:600; color:var(--text); cursor:pointer;
+  }
+  .lec-chip:hover{border-color:var(--accent); color:var(--accent); text-decoration:none}
+
+  .sidebar-actions{display:flex; gap:8px; margin-top:16px}
+  .btn-sm{
+    flex:1; padding:7px 8px; border-radius:8px; border:1px solid var(--border);
+    background:var(--panel-2); color:var(--text); font-size:12px; font-weight:600; cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-sm:hover{background:var(--accent-soft); color:var(--accent); border-color:var(--accent)}
+
+  .backdrop{display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:80}
+
+  /* main content */
+  .content-outer{flex:1; min-width:0; padding:36px 40px 100px}
+  .content{max-width:780px; margin:0 auto}
+
+  .content h1{font-size:28px; font-weight:800; line-height:1.25; margin:0 0 10px; letter-spacing:-.01em}
+  .content h1 + p{color:var(--muted); font-size:14.5px; line-height:1.7; margin-top:0}
+  .content hr{border:none; border-top:1px solid var(--border); margin:28px 0}
+  .content h2{
+    font-size:20px; font-weight:800; margin:40px 0 14px; padding-top:8px; scroll-margin-top:80px;
+    letter-spacing:-.005em;
+  }
+  .content h3{font-size:17px; font-weight:700; margin:0; scroll-margin-top:80px}
+  .content h4{font-size:14.5px; font-weight:700; margin:20px 0 8px; color:var(--accent)}
+  .content p{line-height:1.75; font-size:14.5px; margin:12px 0}
+  .content ul, .content ol{line-height:1.75; font-size:14.5px; padding-left:22px; margin:12px 0}
+  .content li{margin:4px 0}
+  .content li > ul, .content li > ol{margin:4px 0}
+  .content strong{font-weight:700; color:var(--text)}
+  .content code{
+    background:var(--code-bg); color:var(--code-text); padding:2px 6px; border-radius:5px;
+    font-family:'JetBrains Mono',ui-monospace,monospace; font-size:12.5px;
+  }
+  .content pre{
+    background:var(--code-bg); padding:14px 16px; border-radius:10px; overflow-x:auto;
+    border:1px solid var(--border);
+  }
+  .content pre code{background:none; padding:0}
+  .table-wrap{overflow-x:auto; margin:16px 0; border:1px solid var(--border); border-radius:10px}
+  .content table{border-collapse:collapse; width:100%; font-size:13px}
+  .content th{
+    background:var(--panel-2); text-align:left; padding:9px 12px; font-weight:700;
+    border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  .content td{padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:top; line-height:1.6}
+  .content tr:last-child td{border-bottom:none}
+  .content blockquote{
+    margin:14px 0; padding:2px 16px; border-left:3px solid var(--accent); color:var(--muted);
+  }
+
+  /* lecture cards (collapsible) */
+  details.lec-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    margin:14px 0; box-shadow:var(--shadow); overflow:hidden;
+  }
+  details.lec-card > summary{
+    list-style:none; cursor:pointer; padding:16px 20px; display:flex; align-items:center; gap:12px;
+    user-select:none;
+  }
+  details.lec-card > summary::-webkit-details-marker{display:none}
+  details.lec-card > summary h3{flex:1}
+  .chevron{
+    flex-shrink:0; width:22px; height:22px; border-radius:6px; background:var(--panel-2);
+    display:flex; align-items:center; justify-content:center; transition:transform .18s ease;
+  }
+  details[open] > summary .chevron{transform:rotate(90deg)}
+  .lec-num-badge{
+    flex-shrink:0; width:30px; height:30px; border-radius:9px; font-size:12.5px; font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--accent-soft); color:var(--accent);
+  }
+  .lec-body{padding:0 20px 20px}
+  .lec-body h4{margin-top:22px}
+  .lec-body > *:first-child{margin-top:0}
+
+  /* misc badges inside text */
+  .content p strong:first-child{color:var(--accent)}
+
+  footer.site-footer{
+    max-width:780px; margin:40px auto 0; padding:20px 0 60px; border-top:1px solid var(--border);
+    color:var(--muted); font-size:12.5px; text-align:center;
+  }
+
+  #toTop{
+    position:fixed; right:24px; bottom:24px; width:42px; height:42px; border-radius:50%;
+    background:var(--accent); color:#fff; border:none; box-shadow:var(--shadow); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none;
+    transition:opacity .2s;
+  }
+  #toTop.show{opacity:1; pointer-events:auto}
+
+  @media (max-width: 900px){
+    .menu-btn{display:flex}
+    .sidebar{
+      position:fixed; left:0; top:var(--header-h); height:calc(100vh - var(--header-h));
+      width:280px; background:var(--panel); z-index:85; transform:translateX(-100%);
+      transition:transform .2s ease; border-right:1px solid var(--border);
+    }
+    .sidebar.open{transform:translateX(0)}
+    .backdrop.show{display:block}
+    .content-outer{padding:26px 18px 80px}
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<header class="topbar">
+  <button class="icon-btn menu-btn" id="menuBtn" aria-label="Toggle menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <a class="brand" href="index.html"><span class="dot"></span>MEMAXXING · Course-Work</a>
+  <div class="spacer"></div>
+  <button class="icon-btn" id="themeBtn" aria-label="Toggle theme">
+    <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+  </button>
+</header>
+
+<div class="backdrop" id="backdrop"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search" placeholder="Search topics, slide pages…" autocomplete="off">
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-title">Guide</div>
+      <div id="mainNav"></div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-title">Jump to block</div>
+      <div class="chip-grid" id="lecChips"></div>
+    </div>
+
+    <div class="sidebar-actions">
+      <button class="btn-sm" id="expandAll">Expand all</button>
+      <button class="btn-sm" id="collapseAll">Collapse all</button>
+    </div>
+  </aside>
+
+  <div class="content-outer">
+    <div class="content" id="content">
+      <p style="color:var(--muted)">Loading guide…</p>
+    </div>
+    <footer class="site-footer">Reading guide built from the course slide decks, his Classroom topic lists and three years of midsem papers. Exam weights are guesstimates — triage, not truth.</footer>
+  </div>
+</div>
+
+<button id="toTop" aria-label="Back to top">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<script>
+(function(){
+  // ---------- theme ----------
+  const sun = 'M12 17a5 5 0 100-10 5 5 0 000 10zM12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42';
+  const moon = 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z';
+  const themeIcon = document.getElementById('themeIcon');
+  function paintIcon(dark){ themeIcon.innerHTML = '<path d="'+(dark?sun:moon)+'"/>'; }
+  function applyTheme(t){
+    document.documentElement.classList.toggle('dark', t==='dark');
+    paintIcon(t==='dark');
+    try{ localStorage.setItem('site-theme', t); }catch(e){}
+  }
+  let saved = null;
+  try{ saved = localStorage.getItem('site-theme'); }catch(e){}
+  applyTheme(saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'));
+  document.getElementById('themeBtn').onclick = () => {
+    applyTheme(document.documentElement.classList.contains('dark') ? 'light':'dark');
+  };
+
+  // ---------- mobile sidebar ----------
+  const sidebar = document.getElementById('sidebar'), backdrop = document.getElementById('backdrop');
+  function closeSidebar(){ sidebar.classList.remove('open'); backdrop.classList.remove('show'); }
+  document.getElementById('menuBtn').onclick = () => { sidebar.classList.add('open'); backdrop.classList.add('show'); };
+  backdrop.onclick = closeSidebar;
+
+  // ---------- progress bar ----------
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+    document.getElementById('toTop').classList.toggle('show', h.scrollTop > 500);
+  });
+  document.getElementById('toTop').onclick = () => window.scrollTo({top:0, behavior:'smooth'});
+
+  // ---------- slugify (github-ish) ----------
+  const slugCounts = {};
+  function slugify(str){
+    let s = str.toLowerCase().replace(/`/g,'').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-');
+    if (slugCounts[s] === undefined){ slugCounts[s]=0; } else { slugCounts[s]++; s += '-'+slugCounts[s]; }
+    return s;
+  }
+
+  const renderer = new marked.Renderer();
+  renderer.heading = function(text, level, raw){
+    const id = slugify(raw);
+    return '<h'+level+' id="'+id+'">'+text+'</h'+level+'>\n';
+  };
+  marked.setOptions({ renderer, gfm:true, breaks:false });
+
+  fetch('ACN_Reading_Guide.md')
+    .then(r => { if(!r.ok) throw new Error('fetch failed'); return r.text(); })
+    .then(md => {
+      const content = document.getElementById('content');
+      content.innerHTML = marked.parse(md);
+      wrapTables(content);
+      groupLectures(content);
+      buildSidebar(content);
+    })
+    .catch(err => {
+      document.getElementById('content').innerHTML =
+        '<p style="color:#e04f4f">Couldn\'t load <code>ACN_Reading_Guide.md</code>. ' +
+        'Make sure the .md file sits in the same folder as this page in the repo.</p>';
+      console.error(err);
+    });
+
+  function wrapTables(root){
+    root.querySelectorAll('table').forEach(t => {
+      const wrap = document.createElement('div');
+      wrap.className = 'table-wrap';
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(t);
+    });
+  }
+
+  function groupLectures(root){
+    const nodes = Array.from(root.childNodes);
+    const frag = document.createDocumentFragment();
+    let body = null, count = 0;
+
+    nodes.forEach(node => {
+      const isLecH3 = node.nodeType === 1 && node.tagName === 'H3' && /^Block\s+[A-Z]\b/.test(node.textContent);
+      const isH2 = node.nodeType === 1 && node.tagName === 'H2';
+
+      if (isLecH3){
+        count++;
+        const m = node.textContent.match(/^Block\s+([A-Z])\b/);
+        const num = m ? m[1] : '?';
+        const details = document.createElement('details');
+        details.className = 'lec-card';
+        if (count === 1) details.open = true; // open the first lecture by default
+
+        const summary = document.createElement('summary');
+        const badge = document.createElement('span');
+        badge.className = 'lec-num-badge';
+        badge.textContent = num;
+        const chev = document.createElement('span');
+        chev.className = 'chevron';
+        chev.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+
+        summary.appendChild(badge);
+        summary.appendChild(node);
+        summary.appendChild(chev);
+        details.appendChild(summary);
+
+        body = document.createElement('div');
+        body.className = 'lec-body';
+        details.appendChild(body);
+
+        frag.appendChild(details);
+      } else if (isH2){
+        body = null;
+        frag.appendChild(node);
+      } else if (body){
+        body.appendChild(node);
+      } else {
+        frag.appendChild(node);
+      }
+    });
+
+    root.innerHTML = '';
+    root.appendChild(frag);
+  }
+
+  function buildSidebar(root){
+    const mainNav = document.getElementById('mainNav');
+    root.querySelectorAll(':scope > h2').forEach(h2 => {
+      const a = document.createElement('a');
+      a.className = 'nav-link';
+      a.href = '#' + h2.id;
+      a.textContent = h2.textContent;
+      mainNav.appendChild(a);
+    });
+
+    const chipGrid = document.getElementById('lecChips');
+    root.querySelectorAll('details.lec-card summary h3').forEach(h3 => {
+      const m = h3.textContent.match(/^Block\s+([A-Z])\b/);
+      if (!m) return;
+      const chip = document.createElement('a');
+      chip.className = 'lec-chip';
+      chip.href = '#' + h3.id;
+      chip.textContent = m[1];
+      chip.addEventListener('click', () => {
+        const details = h3.closest('details');
+        if (details) details.open = true;
+        closeSidebar();
+      });
+      chipGrid.appendChild(chip);
+    });
+
+    document.getElementById('expandAll').onclick = () =>
+      root.querySelectorAll('details.lec-card').forEach(d => d.open = true);
+    document.getElementById('collapseAll').onclick = () =>
+      root.querySelectorAll('details.lec-card').forEach(d => d.open = false);
+
+    document.getElementById('search').addEventListener('input', e => {
+      const q = e.target.value.trim().toLowerCase();
+      root.querySelectorAll('details.lec-card').forEach(d => {
+        const match = !q || d.textContent.toLowerCase().includes(q);
+        d.style.display = match ? '' : 'none';
+        if (q && match) d.open = true;
+      });
+      chipGrid.querySelectorAll('.lec-chip').forEach(c => {
+        c.style.display = 'inline-flex';
+      });
+    });
+
+    // close mobile sidebar whenever a nav link is tapped
+    document.querySelectorAll('.nav-link').forEach(a => a.addEventListener('click', closeSidebar));
+  }
+})();
+</script>
+</body>
+</html>
