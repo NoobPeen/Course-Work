@@ -1,12 +1,16 @@
 # CS G525 Advanced Computer Networks: Reading Guide and Exam Weights
 
-**Source:** the six slide decks in `ACN/slides` + the topic lists he posted on Classroom for each Kurose chapter + the midsem post-mortem (three years of papers). Instructor: Vinayak Naik.
+**Source:** the six slide decks in `ACN/slides` + the topic lists he posted on Classroom for each Kurose chapter + the midsem post-mortem (three years of papers) + the senior's Notion class notes + the three handout books. Instructor: Vinayak Naik.
+
+**Updated 24 Sep:** added Block I (MANET), mobility inside a LAN / two joined networks / spanning tree / DHCP in Block A, tunnelling and the two VLAN past-paper questions in Block H, the handout-vs-lectures map in §0, and a book page map (§6). Every book page below was checked against the PDFs in `sem1/ACN/`.
 
 **Scope rule used here:** for Kurose Ch 4, 6 and 7 only the topics he listed on Classroom are in scope. The three standalone decks (Mobile IP, Wireless PHY: channel and capacity, Wireless PHY: modulation) had no topic list, so they are treated as **fully in scope**.
 
 **Page numbers** are PDF page numbers (what your viewer shows), not the "6-41"-style footer numbers on the slides.
 
 **Decks:** K4 = `Chapter_4_v9.0.pdf` · K6 = `Chapter_6_v9.0.pdf` · K7 = `Chapter_7_v9.0.pdf` · MIP = `mobile ip.pdf` · PHY2 = `wireless physical layer channel and capacity.pdf` · PHY3 = `lecture03-phy-modulation.pdf` (PHY2/PHY3 are Mythili Vutukuru's IIT Bombay CS 653 lectures).
+
+**Books:** K8e = Kurose & Ross 8e (the handout names 6e; 8e is the copy you have) · P&D = Peterson & Davie 5e · Tan = Tanenbaum 5e · Notion = `ACN/notion-page.pdf` (senior's 2024 class notes). **Book pages are printed page numbers**, the ones in the book's own header. To jump in your viewer: PDF page = printed + 11 (K8e), + 33 (P&D), + 24 (Tan). Notion pages are PDF pages.
 
 ---
 
@@ -25,7 +29,18 @@
 
 **What that means for reading.** You don't need to memorise slide text. For each mechanism, you need to be able to answer three questions: *what state does it keep, what breaks it, and what's the fix + its cost.* Every "Exam angle" below is written around that.
 
-**His lecture order is fixed:** link layer → router internals → NAT → Mobile IP → physical layer → VLAN → MANET → SDN → security. The midsem cut has fallen after VLAN (24-25) or after MANET (25-26). **MANET is the swing topic** and you have no deck for it yet. If he covers OLSR/AODV before 05 Oct, get the slides immediately. In 25-26 it took 12 of 30 marks.
+**His lecture order is fixed:** link layer → router internals → NAT → Mobile IP → physical layer → VLAN → MANET → SDN → security. The midsem cut has fallen after VLAN (24-25) or after MANET (25-26). **MANET is the swing topic.** He has no deck for it (it's board-taught), but the Notion notes cover his lectures on it (Notion p24–42), and Block I below is built from them. If he starts OLSR/AODV before 05 Oct, Block I becomes top tier. In 25-26 it took 12 of 30 marks.
+
+**What the handout says (and doesn't).** The handout has **no midsem syllabus**, only a 9-module course plan, and his real lecture order doesn't follow it. Map of plan → what's actually happened:
+
+| Handout module | Where it lives in his lectures | Midsem status |
+|---|---|---|
+| 1–2 Intro, layered architecture | Folded into the link-layer and router lectures | Only as background |
+| 3 Routing: LS, DV, hierarchical, DSR, AODV, DSDV, OLSR, ZRP | Hierarchical addressing → Block A. The rest → MANET (Block I) | Swing. **LS/DV as concepts only**: no traces in any paper |
+| 4 Routing among mobile devices, global Internet, multicast, MPLS | Mobile IP → Block E. Multicast, BGP, MPLS: not lectured | Mobile IP in. Rest out |
+| 5 TCP congestion control, QoS | Not lectured before the midsem in any year | Out (it has shown up in a compre) |
+| 6 Wireless: LAN, PAN, sensor, ad hoc (12 lectures, "class notes") | 802.11 → D, PHY → F + G, ad hoc → I. PAN/Bluetooth and sensor networks: not lectured | In, except PAN/sensor |
+| 7–9 SDN, wireless security, applications | After MANET in his order | Out: final only |
 
 **Weights below are my guesses** from the three past papers plus how much time he spent on each topic. Use them for triage.
 
@@ -43,9 +58,9 @@
 | F. Wireless PHY: channel, SNR, capacity | PHY2 | **~15%** | PHY in 2/3 midsems + both compres. The "why can't data rate keep rising" chain. |
 | G. Modulation, OFDM, coherence | PHY3 | ~10% | OFDM/ISI half of the PHY question. Pure modulation (ASK/PSK/QAM) 0/3 so far. |
 | H. VLAN + VXLAN | K6 | ~8% | Counted inside "link layer 3/3". VXLAN is new this year. |
-| MANET (OLSR, AODV) | none yet | 0 or ~35% | Only if lectured before 05 Oct. |
+| I. MANET: routing taxonomy, OLSR, AODV | Notion p24–42 (no deck) | 0 or ~35% | Only if lectured before 05 Oct. M25: 12 of 30 marks. |
 
-**Priority order:** NAT = Link layer > PHY chain (F+G) > Mobile IP > VLAN/VXLAN > 802.11 > router internals > pure modulation.
+**Priority order:** NAT = Link layer > PHY chain (F+G) > Mobile IP > VLAN/VXLAN > 802.11 > router internals > pure modulation. **MANET (I) goes to the top tier the day he starts lecturing it.**
 
 ---
 
@@ -55,7 +70,7 @@ Each block: **Slides in scope** · **Topics** · **Read** · **Exam angle** (wha
 
 ### Block A: Link layer: subnets, ARP, routing across subnets, switches · midsem ~20%
 
-**Slides in scope:** K6 p39–51 (MAC addresses, ARP, routing to another subnet), K6 p60–71 (switches, self-learning, interconnecting switches, UMass campus network, switches vs routers). Supporting: K4 p47–50 (subnets, CIDR) and K4 p59–61 (hierarchical addressing, route aggregation). These cover his listed topics "Subnet", "Network of Subnets" and "IP Addressing in a Structure".
+**Slides in scope:** K6 p39–51 (MAC addresses, ARP, routing to another subnet), K6 p60–71 (switches, self-learning, interconnecting switches, UMass campus network, switches vs routers). Supporting: K4 p47–50 (subnets, CIDR) and K4 p59–61 (hierarchical addressing, route aggregation). These cover his listed topics "Subnet", "Network of Subnets" and "IP Addressing in a Structure". Added: K4 p51–57 (DHCP, skim) and K7 p99–101 (beaconing and association: the re-association step when a host moves between APs).
 
 **Topics (his list):** Subnet · Network of Subnets · ARP · Network Topology · Routing on a Tree/Hierarchical Structure · IP Addressing in a Structure · Routing across Subnets · Self-learning switch
 
@@ -67,10 +82,16 @@ Each block: **Slides in scope** · **Topics** · **Read** · **Exam angle** (wha
 - **Network of switches (K6 p67–68):** self-learning works unchanged across a *tree* of switches. Be able to fill in all four switch tables for "C sends to I, I replies to C".
 - **Hierarchy (K6 p69–70 + K4 p59–61):** campus = border → core → aggregation → building-closet L2 switches. Addresses assigned along the tree so that one prefix summarises a subtree (route aggregation). That's why routing tables stay small.
 - **Switches vs routers (K6 p71):** both store-and-forward. Router: L3, table computed by routing algorithms. Switch: L2, table *learned* by flooding.
+- **Mobility inside one LAN, with no router (M25 Q3, 6 marks; K8e §7.3.4 pp.556–558).** Not on any slide, but he set it. The host keeps its IP only if old and new positions are in the **same subnet and broadcast domain**, joined only by L2 devices (switches, APs). It scans beacons, re-associates with the new AP (K7 p100–101), and the switches relearn its MAC → new port. To make that instant, the new AP broadcasts a frame with the host's source MAC, or the host sends a **gratuitous ARP** (Tan p.469). **Condition he marks:** no router means **no Internet** from that setup. The grader wrote "No Internet" in the margin.
+- **Two networks joined by a router (M25 Q5, 6 marks).** Different prefixes, separate broadcast domains. The router terminates the frame, does longest-prefix match, decrements TTL, ARPs for the next hop and builds a **new frame** with its own MAC as the source. It never passes L2 broadcasts across. To stop traffic between them: an **ACL / packet filter** on the router interface (in Block B's terms, a match on src/dst prefix → drop). Conditions: the router is the only path, and source addresses aren't spoofed.
+- **Loops → spanning tree (P&D §3.1.4 pp.194–199; Tan §4.8.3 pp.337–340).** Not on his slides, but it's the named mechanism behind "self-learning only works on a tree". In a mesh, a flooded frame circulates forever and switch tables flap. Bridges elect a **root** (lowest ID). Each bridge keeps only its shortest-path port toward the root and one designated bridge per LAN, and blocks every other port. Cost: blocked links carry no traffic, and the tree must re-converge when a link fails. One sentence of this earns the "loops" mark.
+- **DHCP, one line (K4 p51–57; K8e pp.341–344).** Discover → Offer → Request → ACK over UDP broadcast. It hands out the IP, mask, **default gateway** and DNS server, with a lease. It's how A learns R's IP in the walk-through above, and why moving to another subnet gives you a new IP (Block E).
 
 **Read**
-- The K6 slides above, fully. Kurose Ch 6 sections "Link-Layer Addressing and ARP" and "Link-Layer Switches".
-- Kurose Ch 4 "IPv4 Addressing" for subnets and CIDR only (skip DHCP detail unless you need a refresher on how a host learns its gateway).
+- The K6 slides above, fully. K8e §6.4.1 "Link-Layer Addressing and ARP" pp.478–484 and §6.4.3 "Link-Layer Switches" pp.491–497 (why switched LANs are restricted to a spanning tree: p.496).
+- K8e §4.3.2 "IPv4 Addressing" pp.333–344 for subnets and CIDR (DHCP is pp.341–344: skim).
+- K8e §7.3.4 "Mobility in the Same IP Subnet" pp.556–558. **Read this one: it answers M25 Q3 almost word for word.** p.558 adds that the same trick works across a VLAN spanning several buildings, which ties it to Block H.
+- Second view: P&D §3.2.5–3.2.6 pp.220–231 (subnetting, ARP); P&D §3.1.4 pp.189–202 (learning bridges, spanning tree, limits of bridges). Tan §4.8.2 pp.334–337 (learning bridges); ARP and gratuitous ARP pp.467–469.
 
 **Exam angle**
 - "Two hosts in my lab are on the same switch but different subnets. Why can't they ping each other directly? What must happen?" → gateway, ARP for the router's MAC, not the host's.
@@ -79,8 +100,11 @@ Each block: **Slides in scope** · **Topics** · **Read** · **Exam angle** (wha
 - "Why do switches not need configuration but routers do?" → self-learning vs routing protocol + address plan.
 - "The switch table entry for a host expires / the host moves port. What happens?" → flood until relearned; TTL is why moves heal themselves.
 - ARP failure modes: stale cache after a NIC change, gratuitous ARP, ARP spoofing (no authentication). Hint at spoofing if a question says "someone in my department is intercepting traffic".
+- **(M25 Q3)** "How does an organization provide mobility within the same network without a device that understands routing? (a) Conditions (b) Setup and protocol." → same subnet + broadcast domain, L2-only path, **no Internet**; switch tree sketch (it earned +4), self-learning relearns the port, gratuitous ARP / AP broadcast to make it immediate.
+- **(M25 Q5)** "Two networks are joined. What differs between them? What does the joining device do? How do I stop traffic from one going into the other?" → prefixes + broadcast domains; LPM + TTL + re-ARP + new frame; ACL on the router. "The router doesn't allow it" with no mechanism scored 1 of 2.
+- **(C23 Q6, compre)** "Even with infinite switch buffers, why does link-layer reliability drop as nodes increase?" → more flooding/broadcast as tables churn, **output-port contention**, host receive buffers overflow, more collisions on shared or wireless segments. Buffer size only fixes drops inside the switch.
 
-**Skip (not on his list):** K6 p1–37 (intro, error detection/CRC, multiple access: ALOHA, CSMA/CD, taking-turns, cable). K6 p53–58 (Ethernet frame/standards). K6 p82–109 (MPLS, datacenter networks, "a day in the life", pure ALOHA). *Optional:* "a day in the life" p98–102 is a good ARP/DHCP revision if you have a spare 15 minutes.
+**Skip (not on his list):** K6 p1–37 (intro, error detection/CRC, multiple access: ALOHA, CSMA/CD, taking-turns, cable). K6 p53–58 (Ethernet frame/standards). K6 p82–109 (MPLS, datacenter networks, "a day in the life", pure ALOHA). *Optional:* "a day in the life" p98–102 is a good ARP/DHCP revision if you have a spare 15 minutes. Also skip: spanning-tree configuration-message details (P&D pp.198–199; read pp.194–197 for the idea), RSTP, DHCP message formats and relay agents.
 
 **Interview hook:** the self-learning switch is a cache with TTL-based invalidation plus flood-on-miss: the same pattern as a service-discovery cache.
 
@@ -163,6 +187,7 @@ Each block: **Slides in scope** · **Topics** · **Read** · **Exam angle** (wha
 - "Why does 802.11 need an ACK when Ethernet doesn't?"
 - "Why does an 802.11 frame need three addresses when Ethernet has two?" → the AP is an intermediate L2 hop that isn't the final L2 destination.
 - "Why is SIFS shorter than DIFS?"
+- *Low priority, not in any of his papers:* "My WiFi throughput collapses even though the network is idle." → bit-error losses look like congestion to TCP, so TCP shrinks its window. The fix is to hide the losses at the link layer: 802.11 ACK + retransmission (ARQ), FEC. Worth one line only because it ties Block D to the congestion-control material that shows up in the compres. K8e §7.7 pp.594–596; P&D p.504 sidebar; Tan §6.3.3 pp.539–540.
 
 **Skip:** K7 p1–5, p13–22 (radio basics, SNR, capacity: Block F covers these properly), p25–36 (multipath: *skim p25–26 for Block F*; MIMO, spectrum), p37–48 (coding/modulation: *skim p42–48 as a second view for Block G*), p49–58 (FDM/OFDM/OFDMA: *p52 is a useful OFDM picture*), p65–67 (backward compatibility, multi-user RTS), p74–154 (5G RAN, association/beaconing, scheduling, energy, 5G core, 5G mobility/handover, Bluetooth, satellite, IoT).
 
@@ -235,7 +260,7 @@ Each block: **Slides in scope** · **Topics** · **Read** · **Exam angle** (wha
 
 **Exam angle**
 - The rest of the PHY chain from Block F: "…so how does WiFi get high rates without ISI?" → OFDM, slow per-subcarrier symbols, single-tap equalization, FFT makes it cheap. Condition: the subcarrier bandwidth must be below the coherence bandwidth.
-- "My throughput drops as I move away from the AP even though I'm still connected. Why?" → SNR falls → adaptive modulation drops QAM64 → QAM16 → QPSK.
+- "My throughput drops as I move away from the AP even though I'm still connected. Why?" → SNR falls → adaptive modulation drops QAM64 → QAM16 → QPSK. Name the trigger too: 802.11 **rate adaptation** falls back one rate after 2 missed ACKs and steps up after 10 ACKed frames in a row (K8e pp.559–560).
 - "Why do my phone's packets fail in a moving car but not in the lecture hall?" → Doppler → short coherence time → fast fading → channel estimate at the packet start is stale by the end. Condition: packet duration vs coherence time.
 - "Why DQPSK instead of QPSK?" → no phase lock needed.
 - "Why is FSK rarely used?" → bandwidth.
@@ -244,25 +269,71 @@ Each block: **Slides in scope** · **Topics** · **Read** · **Exam angle** (wha
 
 ### Block H: VLAN + VXLAN · midsem ~8%
 
-**Slides in scope:** K6 p73–80.
+**Slides in scope:** K6 p73–80. Added: K4 p71–74 (tunnelling: the logical vs physical view on p74 is the picture to reproduce).
 
-**Topics (his list):** VLANs, VXLANs
+**Topics (his list):** VLANs, VXLANs. Added: tunnelling in general, because VXLAN, Mobile IP's HA → COA leg and his "virtual topology" question are all the same mechanism.
 
 - **Motivation (p73–74):** one big LAN = one **broadcast domain**: all ARP/DHCP/unknown-unicast flooding crosses everything (scaling, efficiency, security, privacy). Admin problem: a CS person moves to an office in EE but should stay logically in CS.
 - **Port-based VLAN (p75–76):** switch management software groups ports; one physical switch acts as several virtual switches. Traffic isolation; membership can be by MAC instead of port; dynamic reassignment. **Forwarding between VLANs needs routing** (in practice a combined switch-router / L3 switch).
 - **VLANs spanning switches (p77):** **trunk port** carries frames of all VLANs between switches. Frames on the trunk must carry the VLAN ID → **802.1Q**.
 - **802.1Q frame (p78):** 4 bytes inserted after the source address: 2-byte TPID (0x8100) + TCI (12-bit **VLAN ID** → 4094 usable VLANs, 3-bit priority). CRC recomputed.
 - **VXLAN / EVPN (p79–80):** stretch a layer-2 network over a layer-3 underlay (e.g. Sunnyvale ↔ Bangalore data centers). The **VTEP** encapsulates the Ethernet frame in UDP in IP (RFC 7348). 24-bit VNI → ~16M segments (vs 4094 VLANs). Hosts A and B think they're on the same LAN.
+- **Tunnelling, the general pattern (K4 p71–74).** Put the whole inner packet (or frame) in the payload of an outer packet addressed endpoint to endpoint. Routers in the middle forward on the **outer header only**. The far endpoint decapsulates and sees the inner packet unchanged. The slide's case is IPv6 over IPv4. His word for it is a **"wormhole"**. Instances you already know: VXLAN (Ethernet in UDP/IP), Mobile IP (HA wraps the datagram in IP to the COA, P&D p.374), GRE. Cost every time: header overhead (→ MTU), per-endpoint state, and the middle of the network can't see or filter the inner header.
+- **VLAN membership doesn't care about IP.** It's an L2 decision by port or MAC, so it can split hosts that no subnet mask can separate (C25 Q6 below).
 
-**Read:** the slides. Kurose Ch 6 "Virtual Local Area Networks". RFC 7348 §1–4 for VXLAN motivation and the header (short).
+**Read:** the slides. K8e §6.4.4 "Virtual Local Area Networks" pp.497–501 (802.1Q frame pp.499–500). K8e §4.3.4 tunnelling pp.351–353 (IPv6-over-IPv4, same figure as K4 p74). P&D §3.2.9 "Virtual Networks and Tunnels" pp.235–240 (the clearest general treatment). P&D "Virtual LANs" pp.201–202. Tan §4.8.5 "Virtual LANs" pp.342–349; Tan §5.5.3 "Tunneling" pp.429–431. RFC 7348 §1–4 for VXLAN motivation and the header (short).
 
 **Exam angle**
 - "The CS and EE departments share one switch. How do I stop EE from seeing CS's broadcast traffic without buying another switch?" → port-based VLAN. Then: "Now how does a CS host reach an EE host?" → router / L3 switch between VLANs. Conditions: switch supports 802.1Q, the router has an interface (or sub-interface) per VLAN.
 - "A professor moves offices across buildings but must stay on the CS network." → VLAN membership + trunk between the buildings' switches.
 - "Why must frames on a trunk carry a tag, but frames to a host needn't?"
 - "We have two data centers connected over the Internet and I want VMs to migrate between them without changing IP. What do I use, and what's the cost?" → VXLAN; cost = encapsulation overhead (~50 bytes → MTU issues), broadcast/unknown handling across sites, VTEP state. Why not VLAN? → 4094 limit, and VLANs don't cross an L3 network.
+- **(M24 Q1, 6 marks)** "Two privileged people need their data separated from everyone else on the same network. Encryption hides the payload but not the headers. How do you keep both private, and why does it work?" → their ports in their **own VLAN**, 802.1Q trunk if they're on different switches, no route (or an ACL'd one) to other VLANs. It works because the switch never delivers their frames, headers included, to other ports, and their broadcasts (ARP, DHCP) stay inside the VLAN. Conditions: managed 802.1Q switches, admin-controlled ports, trusted trunks (a tag isn't encryption). This scored "Excellent".
+- **(C25 Q6, compre)** "Divide a subnet so that alternate IPs (…1.2, …1.4, …) belong to the same network. Condition?" → no mask can do it (masks group high-order bits; alternate addresses differ in the lowest bit) → **VLAN** by port. Conditions: VLAN-capable switches, the admin controls address assignment, and the two halves don't need to talk (both think the /24 is on-link, so cross-group ARP fails). The script that missed the condition got "Condition?" in the margin.
+- **(C23 Q7, compre)** "Physical topology A — B — C — D. Make A and D virtual neighbours. Explain with packet headers." → tunnel: inner header (A → D) inside an outer header between the tunnel endpoints; B and C forward on the outer header; D decapsulates. Draw both headers.
+
+**Skip:** K4 p69–70 and p75–76 (IPv6 datagram format, IPv6 adoption), IPv6 transition politics, VXLAN header fields beyond the 24-bit VNI, EVPN/BGP internals (one line is enough: BGP carries MAC reachability so the WAN doesn't flood-and-learn).
 
 **Interview hook:** VXLAN is the default overlay under Kubernetes CNIs (Flannel VXLAN mode, Calico VXLAN) and cloud VPCs. A good line to have ready for backend/infra interviews.
+
+---
+
+### Block I: MANET: routing taxonomy, OLSR, AODV · midsem 0 or ~35% (swing)
+
+**Slides in scope:** none. He teaches it on the board, right after VLAN. The record of his lectures is Notion p24–42: MANET intro p24–25, routing taxonomy and LS/DV p25–29, why MANET is hard p29–30, OLSR p31–35, AODV p36–42. **Status check:** if he hasn't started it by ~1 Oct, it's final-only. Drop it to one skim and spend the time on past papers.
+
+**Topics (handout module 3 + his lectures):** why ad hoc routing is hard · source vs hop-by-hop vs virtual-circuit routing · link state vs distance vector (concepts and cost, **no traces**) · OLSR: HELLO, MPR set, MS set, TC messages · AODV: RREQ/RREP, broadcast ID, sequence numbers, reverse route · handout-only: DSR, DSDV, ZRP
+
+- **Why it's hard (Notion p29; Tan p.389):** every node is both host and router, and the topology changes as nodes move, so routes die without warning. Wireless links vary, and there's **interference**: the packet B forwards to C competes with A's next packet to B. Many redundant links mean naive flooding repeats the same information. Batteries are limited, and eavesdropping and spoofing are easy. A protocol must **discover** a path, **maintain** it, and define how routing information is **exchanged**. **Proactive** (OLSR: routes always ready) vs **reactive** (AODV: routes found on demand).
+- **His routing taxonomy (Notion p25–28):** **source routing** (the source picks the whole path, so it needs the full map), **hop-by-hop** (each node picks only the next hop), **virtual circuit** (path set up end to end in advance, state in every router, "very costly"). Link state floods link information so every node builds the full map: cost grows with the number of links, O(n²) when dense. Distance vector swaps a vector of at most N−1 distances with neighbours: O(N). **Pairing: LS ↔ Dijkstra, DV ↔ Bellman–Ford.** The Notion notes have these swapped. Don't copy that.
+- **Plain link state is redundant (Notion p29–30):** if A and B are neighbours, both tell C about link A–B. OLSR makes two cuts: (1) only designated relays retransmit; (2) not every link is advertised.
+- **OLSR HELLO (Notion p33):** a periodic one-hop broadcast listing your neighbours. **HELLOs are never forwarded.** From them each node learns its 2-hop neighbourhood.
+- **MPR set (Notion p31–33):** MPR(N) = the smallest subset of N's 1-hop neighbours such that every 2-hop neighbour of N is a neighbour of some MPR. Several valid sets can exist, and each node computes its own. His graph (edges 4–1, 4–3, 4–5, 4–6, 1–2, 3–2, 6–7): MPR(4) = {3, 6} or {1, 6}. {3} alone misses 7, {6} alone misses 2, {1, 5} fails because 5 doesn't reach 7.
+- **MS set (Notion p33–34):** MS(X) = the nodes that chose X as their MPR. You compute the MPRs first, then the MS sets ("second-order information").
+- **TC messages (Notion p34–35):** carry the advertised neighbours (= the MS set) plus a **sequence number** so stale topology is ignored. A node with an **empty MS set sends no TC**. A node retransmits a TC only if the node it got it from **selected it as an MPR**. (The Notion notes state this backwards.) Every node *processes* every TC.
+- **AODV (Notion p36–42; Tan pp.389–392):** reactive and hop-by-hop. Nodes off active paths keep nothing. Each node keeps two counters: a **sequence number** and a **broadcast ID**. The RREQ carries ⟨src, src seq, broadcast ID, dst, dst seq, hop count⟩ and is flooded. **(src, broadcast ID)** identifies duplicates, which are dropped. Each hop records a **reverse route** to the source. The destination, or an intermediate node with a route at least as fresh, unicasts a **RREP** back along the reverse route, and each hop sets the forward route as the RREP passes. **Reverse route first, forward route second.**
+- **The route-choice rule he marks:** **higher sequence number wins, and hop count only breaks ties.** The destination sequence number works like a logical clock and stops distance vector's count-to-infinity confusion between old and new routes (Tan p.391).
+- **Maintenance (Tan p.391):** a missed HELLO or a failed forward marks the link dead. Routes through it are purged, active neighbours are told, and the source rediscovers. Expanding-ring search limits floods: RREQ with TTL 1, then 2, 3, …
+- **Handout-only, in no paper so far:** **DSR** is reactive *source* routing (the whole path rides in the header and is cached). **DSDV** is proactive DV with destination sequence numbers (AODV's ancestor). **ZRP** is hybrid (proactive inside a zone of radius r, reactive beyond it). One line each.
+
+**Read**
+- Notion p24–42 first: it's the only record of how *he* taught it. Then `ACN_Textbook` Ch 9, which has the Notion errors fixed and the worked MPR/MS sets.
+- **Tan §5.2.11 "Routing in Ad Hoc Networks" pp.389–392: the one book section to read.** It covers AODV discovery (Fig. 5-20, p.390), maintenance and destination sequence numbers (p.391), and route sharing plus DSR (p.392).
+- P&D p.378, sidebar "Mobile Ad Hoc Networks": one page on proactive vs reactive, OLSR as optimised OSPF, AODV as on-demand DV.
+- Background, concepts only: Tan §5.2.3 flooding pp.368–370, §5.2.4 distance vector pp.370–373 (count-to-infinity p.372), §5.2.5 link state pp.373–378. Or K8e §5.2.1–5.2.2 pp.383–395 (count-to-infinity pp.393–395). P&D §3.1.2–3.1.3 pp.174–189 for virtual circuits vs source routing, his three-way taxonomy.
+- K8e pp.534–535 and K7 p9–10: where ad hoc/MANET sits in the wireless taxonomy. One glance.
+- **OLSR is not in any of the three books** beyond P&D's paragraph. For field names: RFC 3626 §3 (MPR, HELLO, TC). RFC 3561 §§1–6 for AODV.
+
+**Exam angle** (M25 gave this block 12 of 30 marks)
+- **(M25 Q1)** "In OLSR: (a) when will a node not generate a TC message? (b) when will it not mention a link in its TC? (c) the MPR set of each node for A — B." → (a) empty MS set; (b) the neighbour isn't in its MS set; (c) MPR(A) = MPR(B) = ∅: no 2-hop neighbours, so no TCs at all.
+- **(C24 Q3, compre)** "When is a node's MS set empty? When is its MPR set empty?" → MS empty: nobody needs it to reach their 2-hop neighbours (a leaf). MPR empty: no 2-hop neighbours: two nodes, an isolated node, or a **clique**. The script that missed the clique got 1 of 2.
+- **(M25 Q2)** "Two RREQs with the same broadcast ID but different source sequence numbers: how is the route to the source decided? Same broadcast ID and same sequence number?" → higher source seq = fresher reverse route, drop the other. Equal → it's a duplicate over two paths: rebroadcast once, keep the **fewer-hops** copy. The script that left out "hop count" got 1.5 of 3.
+- **(C24 Q3(c) / C25 Q4)** "A node gets an RREQ whose destination sequence number is lower than the one it holds." → its route is fresher, so it answers with an RREP itself (if the route is still active). "Why sequence numbers in the RREQ?" → reject stale routes and loops; mark freshness of the reverse route.
+- Likely in his style: "After an earthquake I deploy 30 radios with no infrastructure. Traffic is occasional and teams keep moving. OLSR or AODV, and when would you switch?" → AODV (no standing overhead, fresh routes on demand). Switch to OLSR when traffic becomes frequent and many-to-many and discovery latency dominates. Conditions: symmetric links, every node in range of at least one neighbour.
+
+**Skip:** DV/LS **traces** (Dijkstra tables, Bellman–Ford iterations: none in any paper), OSPF/BGP (K8e §5.3–5.4) and RIP/OSPF message formats (P&D §3.3.2–3.3.3), hierarchical/broadcast/multicast/anycast routing (Tan §5.2.6–5.2.9 pp.378–386), GPSR (Tan p.392), RFC packet formats.
+
+**Interview hook:** AODV's "freshest sequence number wins, then shortest" is the same rule as Raft terms and Lamport clocks: a newer epoch beats a better-looking stale claim. OLSR's MPRs are fan-out reduction, the same idea as relay selection in gossip protocols.
 
 ---
 
@@ -270,10 +341,14 @@ Each block: **Slides in scope** · **Topics** · **Read** · **Exam angle** (wha
 
 | Deck | Out of syllabus (PDF pages) |
 |---|---|
-| K4 | 9–12 (skim), 34–40, 42–62 (except subnet slides 47–50, 59–61), 69–76, 91–102 |
+| K4 | 9–12 (skim), 34–40, 42–62 (except subnet slides 47–50, DHCP 51–57 as a skim, 59–61), 69–70, 75–76, 91–102. **71–74 (tunnelling) is now in: Block H** |
 | K6 | 1–37, 52–58, 81–109 |
-| K7 | 1–5, 13–22 (covered better by PHY2), 25–58 except the cross-references noted in Blocks F/G, 65–67, 74–154 |
+| K7 | 1–5, 13–22 (covered better by PHY2), 25–58 except the cross-references noted in Blocks F/G, 65–67, 74–98, 102–154. **99–101 (beaconing, association) is now in: Block A** |
 | MIP, PHY2, PHY3 | nothing, all in scope |
+| Notion | p42–68 (SDN, security, SSL: post-midsem). Keep p1–42 |
+| K8e (book) | Ch 2, Ch 3 (not taught), Ch 5 except the §5.2 concepts for Block I, §6.2–6.3 (error detection, multiple access), §6.5–6.6 (MPLS, data centres), §7.4 and §7.6.1 (4G/5G), §7.3.6 (Bluetooth), Ch 8 (security: post-midsem) |
+| P&D (book) | Ch 2 except §2.7 wireless and the Shannon–Hartley bit on pp.74–75, Ch 4.1–4.3 (global Internet, multicast, MPLS: handout module 4, never lectured), Ch 5–6 (transport, congestion: not taught) |
+| Tan (book) | Use only the sections §6 lists. Skip §5.2.6–5.2.9 (hierarchical, broadcast, multicast, anycast routing) and §5.3–5.4 (congestion control, QoS) |
 
 Also from the post-mortem: Kurose Ch 3 and Ch 5 aren't taught. **No congestion control, no Dijkstra/DV traces, no throughput numericals** have appeared in any of his papers.
 
@@ -298,10 +373,28 @@ ACN comes first, so it gets the 3–4 Oct weekend. **This moves the G526 timed-p
 |---|---|---|
 | 22–24 Sep | Block C (NAT) + Block A (link layer) | Highest frequency. Build the per-hop MAC/IP table and the NAT table from memory. |
 | 25–27 Sep | Blocks F + G (PHY chain) | Write the "why can't data rate keep rising" chain end to end, closed book. |
-| 28–30 Sep | Block E (Mobile IP) + Block H (VLAN/VXLAN) | Plus MANET slides if he's started it. |
+| 28–30 Sep | Block E (Mobile IP) + Block H (VLAN/VXLAN + tunnelling) | Plus Block I (MANET) from the Notion notes + Tan pp.389–392 if he's started it. Do the MPR/MS sets for his 7-node graph by hand. |
 | 1 Oct | Blocks D + B (802.11, router internals) | Lighter topics. |
 | 2 Oct | G526 timed practice (holiday) | ACN off except 30 min of flash recall. |
 | 3–4 Oct | ACN: past papers 23-24, 24-25, 25-26 under time (90 min each), then compare against his red-pen marking | Answer every part with the §4 template. |
 | 5 Oct | **Exam.** Evening: G526 | |
 
 **Continuous components, don't forget:** weekly assignments (10%, no makeup), paper critique (15%, individual, two weeks) and group presentation (20%). Steer the critique and the presentation toward SDN, VXLAN/data-center overlays or congestion control: that's track-relevant reading that doubles as interview material.
+
+---
+
+## 6. Book page map (all blocks)
+
+The slides are the syllabus; the books are for when a slide is too terse to answer a "why". **Priority** = what to open first if you only have time for one book per block. Printed pages; add 11 (K8e), 33 (P&D) or 24 (Tan) to get the PDF page.
+
+| Block | Read first | Second view | Skip in the books |
+|---|---|---|---|
+| A. Link layer | K8e §6.4.1 pp.478–484 (ARP); §6.4.3 pp.491–497 (switches); §7.3.4 pp.556–558 (mobility in one subnet) | K8e §4.3.2 pp.333–344 (subnets, CIDR; DHCP pp.341–344). P&D §3.1.4 pp.189–202 (spanning tree pp.194–197); §3.2.5–3.2.6 pp.220–231. Tan §4.8.2–4.8.3 pp.334–340; ARP pp.467–469 | K8e §6.4.2 Ethernet pp.484–491; P&D pp.198–199 (STP message details) |
+| B. Router internals | K8e §4.2 pp.311–325 (TCAM p.316, fabrics pp.317–319, queueing pp.319–324, bufferbloat p.324); §4.4 pp.353–360; §4.5 pp.360–364 | K8e §4.1.1 pp.304–309. P&D §3.4 pp.267–280 (HOL blocking p.272, fabrics p.273) | K8e §4.2.5 scheduling pp.325–330 (skim once at most) |
+| C. NAT | K8e §4.3.3 pp.344–346 | Tan "NAT" pp.451–454. P&D pp.335–336 | K8e §4.3.4 IPv6 header pp.347–351 |
+| D. 802.11 | K8e §7.2 pp.536–539 (hidden terminal pp.538–539); §7.3.2 pp.548–553 (CSMA/CA, RTS/CTS); §7.3.3 pp.553–556 (addresses) | P&D §2.7 pp.128–141 (hidden node p.137, CSMA/CA p.138). Tan §4.4.3 pp.303–309 (hidden/exposed p.305) | K8e §7.3.5–7.3.6 pp.559–563, §7.4 pp.563–578 |
+| E. Mobile IP | K8e §7.5 pp.578–587 (triangle routing p.585); §7.6.2 pp.592–594 | P&D §4.4 pp.369–379 (Mobile IP pp.372–379; HA's gratuitous ARP + tunnel p.374). Tan §5.2.10 pp.386–389 | K8e §7.6.1 4G/5G mobility pp.587–592 |
+| F. PHY: channel, capacity | the PHY2 deck (no book matches his treatment) | K8e §7.2 pp.536–539. Tan §2.1 pp.90–95 (Nyquist and Shannon p.94); §2.3 pp.105–110. P&D pp.74–75 (Shannon–Hartley) | Tan §2.2 guided media, §2.4+ satellites and telephone system |
+| G. Modulation, OFDM | the PHY3 deck | Tan §2.5.2 pp.130–132 (ASK/FSK/PSK, QPSK/QAM); §2.5.3 pp.132–133 (the OFDM part of FDM); §4.4.2 pp.301–303 (802.11 PHY). K8e pp.537–538 (BER vs SNR); p.571 (OFDM in LTE). P&D p.135 | Tan §2.5.1 baseband and line codes pp.125–130; §2.5.4–2.5.5 TDM/CDM |
+| H. VLAN, VXLAN, tunnels | K8e §6.4.4 pp.497–501 (802.1Q pp.499–500); P&D §3.2.9 pp.235–240 (tunnels) | K8e pp.351–353 (IPv6-over-IPv4 tunnel). P&D pp.201–202. Tan §4.8.5 pp.342–349; §5.5.3 pp.429–431 | K8e §6.5 MPLS pp.501–505; P&D §4.3 MPLS |
+| I. MANET | Tan §5.2.11 pp.389–392 | P&D p.378 (sidebar). Tan §5.2.3–5.2.5 pp.368–378 (concepts). K8e §5.2 pp.380–395 (concepts). P&D §3.1.2–3.1.3 pp.174–189 | All traces; Tan §5.2.6–5.2.9; GPSR p.392 |

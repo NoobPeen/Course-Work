@@ -1,14 +1,17 @@
 # CS G623 Advanced Operating Systems: Lecture Outlines and Textbook Map
 
-**Source:** Whisper large-v3 transcripts of Lec 3–14, 16 and 17 (Prof. Biju K Raveendran, Sem I 2026–27).
+**Source:** Whisper large-v3 transcripts of Lec 3–14, 16 and 17, plus his slides L01–L18 (Prof. Biju K Raveendran, Sem I 2026–27).
 **Primary text:** T1 = Silberschatz, Galvin, Gagne, *Operating System Concepts*, **10th ed.** (the edition your handout names).
-**Secondary:** T2 = Singhal & Shivaratri; R7 = Bovet & Cesati, *Understanding the Linux Kernel* (ULK, 3rd ed. chapter numbers); Stallings = *Operating Systems: Internals and Design Principles* (not on the handout, but several of his slides follow it word for word; see below).
+**Secondary:** T2 = Singhal & Shivaratri; R7 = Bovet & Cesati, *Understanding the Linux Kernel* (ULK, 3rd ed. chapter numbers); Stallings = *Operating Systems: Internals and Design Principles*, 6th ed. (not on the handout, but several of his slides follow it word for word; see below).
+**Page numbers** are the printed page numbers of the PDFs in your AOS folder (`ASOC.pdf`, the Stallings 6e PDF, `ulk3.pdf`, `Singhal_Shivaratri_OCR.pdf`). "Slides L09 p. 7" means slide 7 of his Lecture 9 deck. "Notion p. N" is page N of the senior's notes of his class last year (`notion-page.pdf`); use them to corroborate, not as a primary source.
 
 ---
 
 ## 0. Read this first
 
-**Coverage.** Lectures 1, 2 and 15 are missing from the folder. Lec 1–2 were probably the intro (handout L01–L02, T1 Ch 1–2). Lec 15 fell between the fork-tree tracing in Lec 14 and Lec 16, so get notes from a classmate. So far, the lectures cover roughly **handout L01–L08** (OS structure, system calls, processes in UNIX/Linux). They also preview multiprocessor architecture (L09–L12, in Lec 3) and pieces of Linux scheduling and load balancing (L17–L22, in Lec 10, 12 and 13). Threads (T1 Ch 4) haven't started yet. He said in Lec 17 that he is "six classes behind" last year.
+**Coverage.** Transcripts exist for Lec 3–14, 16 and 17. Lec 1–2 were the intro (slides L01–L03). Lec 15 has audio but no transcript; its slides (L15: `fork2.c`–`fork6.c`) are summarised below. The slides go one deck further than the transcripts: **L18 (20 Sep)** covers `do_fork`, `vfork`, `wait`/`waitpid`, `exec`, the environment, process switching and termination (`do_exit`, `release`), and is summarised below as "Lec 18". So far the class covers roughly **handout L01–L08** (OS structure, system calls, processes in UNIX/Linux). It also previewed multiprocessor architecture (L09–L12, in Lec 3) and pieces of Linux scheduling and load balancing (L17–L22, in Lec 10, 12 and 13). Threads (T1 Ch 4) haven't started; in Lec 16 he said processes "along with the threads" come "in coming classes". He said in Lec 17 that he is "six classes behind" last year.
+
+**Midsem scope.** The handout has no separate midsem syllabus, so it is what he teaches before 08 Oct. Lab-only material (onlines, ADT submission rules, kernel recompilation) and course logistics are left out of the outlines below.
 
 **Handout discrepancy.** The handout cites "T1 Ch 16" for Linux, but in the 10th edition Ch 16 is *Security*. The Linux case study is **Ch 20**. The handout's reference probably dates from an older edition, so use Ch 20.
 
@@ -26,9 +29,9 @@ I list these next to each lecture. If a Silberschatz section only partly covers 
 - Lec 5, last lines ("It's a good one" ×3): hallucination.
 - Lec 11, everything after "D, Y, C, R, 1 is the class": student chatter after the recording kept running.
 - Lec 17, everything after the inode discussion: student chatter.
-- Lec 10, first ~10 min: attendance and research-practice advice. It isn't exam material, but it's worth one read for career planning.
+- Lec 10, first ~10 min: attendance and research-practice advice. Not exam material.
 
-**Section numbers.** The numbers below are from the 10th-edition table of contents. The Wiley India reprint uses the same section numbering, so spend 5 minutes checking them against your copy's TOC.
+**Section and page numbers.** Section numbers are from the 10th-edition table of contents, and page numbers from `ASOC.pdf` (10e). The Wiley India reprint uses the same section numbering; if your printed copy's pages differ, go by the section number.
 
 ---
 
@@ -52,7 +55,7 @@ Each lecture has four parts:
   - **Out-of-order execution** runs instructions out of order but retires them in order, with a buffer (he called it the "reservation station") holding early results.
   - **Hyper-threading** gives 2 *hardware* threads per core. These are never software threads.
   - **Turbo boost** is DVFS: power ∝ V²f, so lower frequency and voltage save energy.
-  - His framing: i3 = hyper-threading, i7 = HT + one turbo frequency, i9 = HT + multiple turbo frequencies. "**Never say the difference between i3/i5/i7/i9 is frequency.**"
+  - His framing: i3 = hyper-threading, i5 = turbo boost, i7 = HT + one turbo frequency, i9 = HT + multiple turbo frequencies. "**Never say the difference between i3/i5/i7/i9 is frequency.**"
 - **Symmetric vs asymmetric depends on the level you compare.** Same ISA and same frequency is truly symmetric (SMP Linux assumes this). Same ISA with different frequencies is symmetric by ISA but asymmetric by frequency; processes can still migrate. Different ISAs (e.g., CPU + DSP) make a **heterogeneous multicore**: the cores share data through memory, but processes cannot migrate. Fast and slow cores exist for energy saving.
 - **Cache hierarchy:**
   - **L1 is always private and split (I/D)** because it's part of the pipeline: fetch and memory access happen at the same time.
@@ -76,16 +79,21 @@ Each lecture has four parts:
 - "Why is clock sync hard in a distributed system?"
 
 **Read**
-- **T2 16.1–16.5:** the primary source for tightly vs loosely coupled, UMA/NUMA/NORMA, interconnects and caching/coherence (handout L09–L12).
+- **T2 16.1–16.5, pp. 435–441:** the primary source for tightly vs loosely coupled, UMA/NUMA/NORMA (p. 437), interconnects (pp. 437–440) and caching/coherence (pp. 440–441) (handout L09–L12).
+- **T2 5.2, pp. 97–99:** why there is no global clock (his clock-sync point).
 - **T1:**
-  - 1.3.1–1.3.3: single-processor, multiprocessor (SMP, multicore, **NUMA figure**) and clustered systems.
-  - 1.4.1: multiprogramming and multitasking.
-  - 1.5.5: cache management and coherency.
-  - 1.8: distributed systems.
-  - 5.5.2: multicore processors, hardware threads, chip multithreading.
-  - 5.5.4: NUMA-aware affinity.
-  - 5.5.5: heterogeneous multiprocessing (big.LITTLE).
-  - 3.8.2: RPC.
+  - 1.3.1–1.3.3, pp. 15–20: single-processor, multiprocessor (SMP Fig 1.8 p. 17, **NUMA Fig 1.10 p. 19**) and clustered systems.
+  - 1.4.1, pp. 23–24: multiprogramming and multitasking.
+  - 1.5.5, pp. 30–32: cache management and coherency.
+  - 1.8, p. 35: distributed systems.
+  - 1.10.5–1.10.6, pp. 44–45: cloud; real-time embedded (the rest of his "types of OS" slide).
+  - 5.5.1, p. 220: asymmetric multiprocessing (textbook sense: one master core runs the kernel).
+  - 5.5.2, pp. 221–223: multicore processors, hardware threads, chip multithreading.
+  - 5.5.4, p. 225: NUMA-aware affinity.
+  - 5.5.5, p. 226: heterogeneous multiprocessing (big.LITTLE).
+  - 3.8.2, pp. 149–152: RPC.
+- **Slides:** L01 p. 7, L03 p. 2 (types of OS list).
+- **Notion pp. 1–3:** von Neumann, Harvard and modified Harvard; i3 (hyper-threading), i5 (turbo boost), i7, i9; turbo boost vs overclocking.
 - Pipelining, superscalar and out-of-order execution aren't in either text. Any architecture book covers them (Hennessy & Patterson).
 
 **Transcript fixes:** ILV → ILP · "Kindle has 20-stage pipeline" → probably "Intel (Pentium 4)" · "institute" → execute · "block cycle" → clock cycle · "codes/course" → cores · "pneuma / new mark" → NUMA · "umma" → UMA · "infinite band" → InfiniBand · "pops" → hops · "right update" → write update · "Intel Atom… nine cores" → likely misheard (the point is one fast core + several slow cores).
@@ -134,19 +142,20 @@ Each lecture has four parts:
 
 **Read**
 - **T1:**
-  - 2.3.1–2.3.3: system calls, API, types.
-  - 2.8.1: monolithic.
-  - 2.8.2: layered.
-  - 2.8.4: modules.
-  - 2.9.1: building the Linux kernel from source.
-  - 12.3.1: block vs character devices.
-  - 13.1.2: file operations, **per-process vs system-wide open-file tables, file pointer, open count**.
-  - 13.3: absolute vs relative path names.
-  - 14.2: in-memory FS structures, the `open()` figure.
-  - 14.4.3: indexed allocation and the UNIX inode.
-  - 14.6: buffer/page cache.
-  - 20.2–20.3: Linux design and kernel modules.
-- **R7 ULK Ch 10:** system call handler.
+  - 2.3.1–2.3.3, pp. 62–73: system calls, API, types.
+  - 2.8.1, pp. 82–83: monolithic (UNIX Fig 2.12 p. 82, Linux Fig 2.13 p. 83).
+  - 2.8.2, pp. 83–84: layered.
+  - 2.8.4, p. 86: modules.
+  - 12.3.1, pp. 503–504: block vs character devices.
+  - 13.1.2, pp. 532–536: file operations, **per-process vs system-wide open-file tables, file pointer, open count**.
+  - 13.3.3, pp. 545–547: absolute vs relative path names.
+  - 14.2, pp. 566–568: in-memory FS structures, the `open()` figure.
+  - 14.4.3, pp. 575–577: indexed allocation and the UNIX inode (Fig 14.8, p. 577).
+  - 14.6, pp. 582–586: buffer/page cache.
+  - 20.2–20.3, pp. 780–786: Linux design and kernel modules.
+- **R7 ULK Ch 1, pp. 14–19:** hard and soft links, file types, inode, file-handling system calls.
+- **R7 ULK Ch 10, pp. 399–404:** system call handler, `int $0x80`.
+- **Slides:** L04 pp. 2–7.
 
 **Transcript fixes:** "microcurrent / micro critical approach" → microkernel · "interrupt xat" → `int 0x80` · "scanner function" → scanf · "I not / INOD" → inode · "BID" → PID · "a1.pxt / pxp" → a1.txt · "beta block / delta block" → data block · "temperance" → temporal · "no-sit-brain" → a gcc tail-call option (probably `-foptimize-sibling-calls`; unclear) · "S-close / F-close" → fclose · "units" → Unix.
 
@@ -161,7 +170,7 @@ Each lecture has four parts:
     - It's easy to extend.
     - **It's easy to port**, because only the small core is architecture-specific. That matters for ASICs, embedded systems and time-to-market.
     - It's more reliable and secure because the kernel is small.
-  - Con: user↔kernel message-passing overhead, so it isn't used for general-purpose or high-performance OSes.
+  - Con: user↔kernel message-passing overhead, so it isn't used for general-purpose or high-performance OSes. His rule: for high performance, never a microkernel; for embedded, never a monolithic kernel.
   - Examples: **QNX** (automotive, avionics, robotics; he pushed the QNX certification), TinyOS (sensor motes). Nano- and pico-kernels are even smaller. Energy-constrained devices (a pacemaker battery must last 4+ years) are another use case.
 - **Monolithic kernel:** the file system, scheduler and virtual memory are all inside the kernel.
 - **Hybrids:**
@@ -170,7 +179,6 @@ Each lecture has four parts:
   - Hypervisors (KVM, Xen) are partly microkernel.
   - "No OS follows a single paradigm."
 - **Portability:** the `arch/` directory in the Linux source; gcc cross-compiling.
-- **Tangents (skip):** interoperable file systems (FAT12 on floppies because the FAT32 table exceeds 1.44 MB; ISO 9660 on CDs), GRUB/LILO passwords, bypassing Windows SAM.
 - **Partitions:** *raw* vs *cooked* (formatted with a file system). **Swap is a raw partition, 1.5–2× RAM.** A raw byte dump is faster than going through a file system.
 - **Schedulers:**
   - Long-term: new → ready.
@@ -184,18 +192,21 @@ Each lecture has four parts:
 
 **Read**
 - **T1:**
-  - 2.8.3: **microkernels** (Mach, Darwin, QNX).
-  - 2.8.4: modules.
-  - 2.8.5: **hybrid systems** (macOS/iOS, Android, Windows).
-  - 3.2.2: CPU scheduling, including the swapping/medium-term sidebar.
-  - 9.1.2: **address binding**.
-  - 9.1.4–9.1.5: dynamic loading and linking.
-  - 9.5: swapping.
-  - 10.2.1: demand paging and valid-invalid bits.
-  - **10.6.1: cause of thrashing.** This is almost exactly his "long-term scheduler makes it worse" story.
-  - 11.5.1: partitions and raw disk.
-  - **11.6: swap-space management** (raw partition).
-- **Stallings 3.2:** suspended processes and reasons for suspension (his "which one to suspend" framing).
+  - 2.8.3, pp. 84–85: **microkernels** (Mach, Darwin, QNX).
+  - 2.8.4, p. 86: modules.
+  - 2.8.5, pp. 86–91: **hybrid systems** (macOS/iOS, Android, Windows).
+  - 3.2.2, p. 113: CPU scheduling, including the swapping/medium-term sidebar.
+  - 9.1.2, pp. 352–353: **address binding**.
+  - 9.1.4–9.1.5, pp. 355–356: dynamic loading and linking.
+  - 9.5, pp. 376–379: swapping.
+  - 10.2.1, pp. 393–396: demand paging and valid-invalid bits.
+  - **10.6.1, pp. 419–420: cause of thrashing.** This is almost exactly his "long-term scheduler makes it worse" story.
+  - 11.5.1, pp. 463–465: partitions and raw disk (p. 464).
+  - **11.6, pp. 467–469: swap-space management** (raw partition, p. 468; Linux historically suggested swap = 2× RAM, p. 468).
+  - 9.5.1, p. 377: the OS keeps metadata for swapped-out processes in memory (his "the PCB is never swapped").
+- **Stallings 3.2, pp. 121–126:** suspended processes and reasons for suspension (his "which one to suspend" framing).
+- **Stallings 4.3, pp. 179–185:** microkernel benefits and performance.
+- **Slides:** L05 pp. 2–8.
 
 **Transcript fixes:** "microcurrent" → microkernel · "unx workshop" → QNX workshop · "minecast / micas / telos p" → MICAz / TelosB motes · "tiny orders" → TinyOS · "ARC directory" → `arch/` · "MDFs, getStick4, part32, part12" → NTFS, ext4, FAT32, FAT12 · "high signer" → High Sierra/ISO 9660 · "lilo / grep password" → LILO / GRUB password · "row / couple / book the partition" → raw / cooked · "with time scheduler" → medium-term · "tangling" → dangling · "zen" → Xen · "Solari" → Solaris.
 
@@ -203,35 +214,20 @@ Each lecture has four parts:
 
 ### Lec 6: Abstract data types and C practice for the lab
 
-This is mostly lab material. It matters for the onlines, not much for the midsem.
+Mostly lab material (ADT file layout, build commands, lab rules), which matters for the onlines, not the midsem, and is left out here. The exam-relevant points:
 
 **Outline**
-- **Why ADTs:** you ship only `.h` and `.o` and hide the implementation. You can swap implementations (linear vs binary search) by **relinking, without recompiling the driver**. This gives you abstraction and encapsulation in C.
-- **Three files:**
-  - **Interface** `.h`: constants, struct declarations, `extern` prototypes with pre- and post-condition comments, and `#ifndef/#define` include guards.
-  - **Implementation** `.c`: `#include`s the interface. Its name doesn't have to match the header's.
-  - **Driver:** `main` only, as small as possible.
-- **`int main(int argc, char *argv[])`.** He insists on this exact signature, not `char **argv`. The return value goes to the parent (bash); check it with `echo $?`. A finished process stays a zombie until the parent collects its status.
-- **Arguments:** `argv[0]` is the program name, and every argument is a string. `atoi` stops at the first non-digit (`"5abc6"` → 5). Use `atof` for floats.
+- **`int main(int argc, char *argv[])`.** The return value goes to the parent (bash); check it with `echo $?`. A finished process stays a zombie until the parent collects its status.
+- **Arguments:** `argv[0]` is the program name, and every argument is a string. `atoi` stops at the first non-digit (`"5abc6"` → 5).
 - **`void*` is the generic pointer.** A pthread start routine is `void *f(void *)`, so pack many arguments into a struct.
 - **Row-major arrays and caches:** `a[i][j]` loops are cache-friendly; `a[j][i]` misses on every access (his 1024-column example).
-- **OS work is about finite n.** At n = 10, n² + 5 beats n + 2000. That's why quicksort and mergesort coexist, why randomized pivots help, and why random cache replacement is used. External sorting handles data larger than RAM.
-- **Build:** `gcc -c x.c` → `x.o`, then `gcc -o name a.o b.o driver.o`. Always name the executable (otherwise it's `a.out` and gets overwritten).
-- **Lab rules:**
-  - Input comes from files via `fopen`/`fscanf`, not typing and not redirection.
-  - **No `gets`/`fgets`** (his rule); use `fscanf`/`read`.
-  - Prefer `strncpy`/`strncmp`.
-  - **Learn `man`** because there's no internet in the lab.
-  - Bring only a pen and water; everyone uses identical machines.
-- **Next up:** recompile the kernel from kernel.org *unmodified* first, then implement an individual syscall.
+- **OS work is about finite n.** At n = 10, n² + 5 beats n + 2000. That's why quicksort and mergesort coexist, why randomized pivots help, and why random cache replacement is used.
 
 **Read**
 - **T1:**
-  - 2.5: linkers and loaders (object files, relocation).
-  - 3.3.2: return status and zombies.
-  - 4.4.1: Pthreads (`void*` signature).
-  - **10.9.5: program structure** (the classic row- vs column-order array example).
-- **R9 K&R** for C details.
+  - 3.3.2, pp. 121–122: return status and zombies.
+  - 4.4.1, pp. 169–170: Pthreads (`void*` signature).
+  - **10.9.5, pp. 433–434: program structure** (the classic row- vs column-order array example).
 
 **Transcript fixes:** "scan of an printer" → scanf and printf · "LIPSY role SO" → libc.so · "extent / extend" → extern · "rc / rv / rg" → argc / argv · "K2F" → atof · "CUBE sort / MERG" → quicksort / merge sort · "huda programming" → CUDA · "get test / fget does" → gets / fgets · "echo dollars hash" → `echo $?` · "A dot O" → a.out.
 
@@ -257,7 +253,6 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
   - Timers are **down-counters**: detecting zero needs one NOR gate, versus a comparator of XORs.
   - Loading the timer is privileged.
 - **Memory hardware:** SDRAM is synchronized to an *external* bus clock, not the CPU clock, so you know when to check back. DMA does disk→RAM transfers and interrupts when done. SRAM (used for caches) needs no refresh; DRAM needs refresh.
-- Electronics tangents (multivibrators, RC charging) → skip.
 
 **He asked / stressed**
 - "Why is the timer the only mechanism for CPU protection?"
@@ -266,15 +261,17 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 
 **Read**
 - **T1:**
-  - 1.4.2: **dual-mode and multimode operation**.
-  - 1.4.3: **timer**.
-  - 1.2.1 and 12.2.3: interrupts.
-  - 12.2.4: **DMA**.
-  - 1.7, 18.4–18.5: VM building blocks; Type 0/1/2 hypervisors and paravirtualization.
-  - 17.3: protection rings (x86 and ARM, hypervisor ring).
-  - 3.3.1–3.3.2: creation, termination, zombies.
-  - 5.5.3–5.5.4: load balancing and affinity.
-- **ULK Ch 9:** the `brk` system call.
+  - 1.4.2, pp. 24–25: **dual-mode and multimode operation**.
+  - 1.4.3, p. 26: **timer**.
+  - 1.2.1, pp. 8–11, and 12.2.3, pp. 494–498: interrupts.
+  - 12.2.4, pp. 498–500: **DMA**.
+  - 1.7, p. 34, and 18.4–18.5, pp. 707–719: VM building blocks; Type 0/1/2 hypervisors (pp. 713–716) and paravirtualization (pp. 716–717).
+  - 17.3, pp. 669–671: protection rings (x86 and ARM, hypervisor ring).
+  - 3.3.1–3.3.2, pp. 116–122: creation, termination, zombies.
+  - 5.5.3–5.5.4, pp. 224–225: load balancing and affinity.
+- **ULK Ch 9, pp. 395–398:** managing the heap, the `brk` system call.
+- **Losing the CPU on a syscall:** Stallings 3.7, p. 149 (SVR4 preempts only on the kernel → user return) and ULK Ch 7, pp. 260–261 (`TIF_NEED_RESCHED`).
+- **Slides:** L07 pp. 3–5. **Notion pp. 6–8** (protection, timer).
 
 **Transcript fixes:** "interrupt xat" → `int 0x80` · "cash" → cache · "v ram / D-RAM" → DRAM · "malo" → malloc · "keep / keeps" → heap(s) · "port" (process creation) → fork · "impending queue" → pending queue · "zohari industry" → Zuari (local tangent).
 
@@ -283,7 +280,6 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 ### Lec 8: Memory protection (segmentation and paging); syscall mechanics and parameter passing; mode vs context switch
 
 **Outline**
-- **Kernel recompilation:** use the bare-metal lab machine; recompile unmodified first.
 - **Protection trio:** CPU protection = timer; I/O protection = privileged instructions; **memory protection:**
   - **Segmentation** is the user's view of a program (code, data, stack and extra segments).
     - Intel: **LDT + GDT, 8K entries each** (13-bit index + 1 table-indicator bit) → **16K segments max**, never more than 8K of either kind.
@@ -317,16 +313,18 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 
 **Read**
 - **T1:**
-  - 9.1.1: base/limit hardware.
-  - 9.2.1: memory protection.
-  - 9.2.3: **fragmentation and the 50-percent rule (⅓ unusable)**.
-  - 9.3.1–9.3.3: paging, TLB, valid-invalid bit.
-  - **9.6.1: IA-32 segmentation** (LDT/GDT, 8K entries, selector = 13 + 1 + 2 bits) **and paging**. In 10e, segmentation lives here, not in its own section.
-  - **2.3.2–2.3.3: three parameter-passing methods** (registers / block / stack, Fig 2.7).
-  - 3.2.3: context switch.
-- **Stallings 3.5:** "Execution of the OS" (non-process kernel vs executing within user processes). This is the mode-switch vs process-switch argument.
-- **ULK Ch 2:** Linux segmentation, GDT/LDT.
-- **ULK Ch 10:** syscall handler, parameter passing, verifying parameters.
+  - 9.1.1, pp. 350–352: base/limit hardware.
+  - 9.2.1, pp. 357–358: memory protection.
+  - 9.2.3, pp. 359–360: **fragmentation and the 50-percent rule (⅓ unusable, p. 359)**.
+  - 9.3.1–9.3.3, pp. 360–369: paging, TLB, valid-invalid bit.
+  - **9.6.1, pp. 379–382: IA-32 segmentation** (LDT/GDT, 8K entries, selector = 13 + 1 + 2 bits, p. 380) **and paging**. In 10e, segmentation lives here, not in its own section.
+  - **2.3.2, pp. 63–66: the three parameter-passing methods** (registers / block / stack, Fig 2.7 p. 66).
+  - 3.2.3, pp. 114–115: context switch.
+- **Stallings 3.4, pp. 138–140:** "Mode Switching" and "Change of Process State", i.e. mode switch vs process switch.
+- **Stallings 3.5, pp. 140–143:** "Execution of the Operating System" (non-process kernel vs executing within user processes). This is why a UNIX syscall is only a mode switch.
+- **ULK Ch 2, pp. 36–45:** segmentation in hardware and in Linux, GDT/LDT.
+- **ULK Ch 10, pp. 399–412:** syscall handler, parameter passing (pp. 409–411), verifying parameters (pp. 411–412).
+- **Slides:** L08 pp. 2–4, L09 pp. 6–8.
 
 **Transcript fixes:** "waging / phasing" → paging · "resistance" → registers · "gem / gem and link" → jump / jal · "interrupt x ap / INGREP text ID" → `int 0x80` · "edx ecx edx esi" → **EBX, ECX, EDX, ESI, EDI** · "DAX / eas / BIS" → EAX · "IOC / iocdl" → ioctl · "cisco" → CISC · "Solanese" → Solaris · "staffing address" → starting address · "thunder of the computer" → control.
 
@@ -368,17 +366,19 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 
 **Read**
 - **T1:**
-  - 2.3.3: types of system calls.
-  - 3.1.2: process states.
-  - **3.2.3: context switch**.
-  - **3.3.1: `fork()`/`exec()`/`wait()`** (Figs 3.8–3.9).
-  - **10.3: copy-on-write (includes `vfork()`)**. This matches the lecture almost exactly.
-  - **9.3.2: TLB, ASIDs, effective access time.** Contrast its EAT formula with his 1100-access count.
-  - 10.2.1: page-fault handling steps.
-  - 10.4.1: basic page replacement ("if there is no free frame").
-  - 20.4.1: the fork/exec model.
-- **ULK Ch 3:** process creation.
-- **ULK Ch 7:** timeslice split at fork in the 2.6-era scheduler.
+  - 2.3.3, pp. 66–73: types of system calls.
+  - 3.1.2, pp. 107–109: process states (Fig 3.2, p. 109).
+  - **3.2.3, pp. 114–115: context switch**.
+  - **3.3.1, pp. 116–120: `fork()`/`exec()`/`wait()`** (Figs 3.8–3.9, pp. 118–119).
+  - **10.3, pp. 399–401: copy-on-write (includes `vfork()`, p. 400)**. This matches the lecture almost exactly.
+  - **9.3.2, pp. 365–368: TLB, ASIDs (p. 366), effective access time (p. 367).** Contrast its EAT formula with his 1100-access count.
+  - 10.2.1, pp. 393–396: page-fault handling steps.
+  - 10.4.1, pp. 401–404: basic page replacement ("if there is no free frame", p. 402).
+  - 20.4.1, pp. 786–789: the fork/exec model.
+- **ULK Ch 3, pp. 115–117:** `clone()`, `fork()`, `vfork()`.
+- **ULK Ch 7, p. 269:** `sched_fork()` splits the parent's remaining ticks in two halves, to stop a process gaining CPU by forking. **ULK Ch 3, p. 118:** the child is inserted right before the parent in the runqueue so it runs first (avoids needless COW if it `exec`s at once).
+- **Notion pp. 11, 18–19:** quantum split, COW, vfork.
+- **Slides:** L09 pp. 2–3, L10 pp. 5–6.
 
 **Transcript fixes:** "interrupt XID" → `int 0x80` · "jam" → jump · "indri" → `entry` (arch/x86/entry) · "v4 / four" → vfork / fork · "emccv / EFCC" → execve / exec · "delta section" → data section · "TLP / TLV / DLB / ELB" → TLB · "priority reverse system" → priority-preemptive system · "TLB hint" → TLB *hit* · "contact switch" → context switch · "ni system called" → `sys_ni_syscall` · "blue linux" → `include/linux` (syscalls.h).
 
@@ -402,7 +402,6 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
   - This is why a file can be empty after a segfault; `fsync` forces the flush.
 - **Never invoke a syscall from inside the kernel.** Call the kernel function directly.
 - **No floating point in the kernel.** The first syscall assignment: pass the IEEE-754 bits as an unsigned int and interpret them in the kernel. Return distinct error codes for NaN, ±∞, overflow and underflow.
-- **Placement aside:** systems companies (Qualcomm etc.) came first last year and asked **bit manipulation** and a lot of OS.
 - **Syscall design principles:**
   - One purpose per syscall (compose several rather than building a CISC-like one).
   - Define the arguments, return value and **error codes**.
@@ -418,15 +417,17 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 
 **Read**
 - **T1:**
-  - **5.7.1: Linux scheduling** (scheduling classes; RT 0–99, normal 100–139).
-  - 5.3.3–5.3.4: RR and priority scheduling.
-  - 2.3.2: API vs syscall.
-  - **2.3.3: types of system calls** (Windows vs UNIX table).
-  - 11.1: HDD seek and rotational latency.
-  - 12.4.2–12.4.3: buffering and caching.
-  - 14.6.2: synchronous vs asynchronous writes.
-- **ULK Ch 7:** SCHED_FIFO/SCHED_RR semantics.
-- **ULK Ch 10:** system calls.
+  - **5.7.1, pp. 234–238: Linux scheduling** (scheduling classes; RT 0–99, normal 100–139, p. 237).
+  - 5.3.3–5.3.4, pp. 209–213: RR and priority scheduling.
+  - 5.6.6, p. 233: POSIX `SCHED_FIFO` / `SCHED_RR`.
+  - 2.3.2, pp. 63–66: API vs syscall.
+  - **2.3.3, pp. 66–73: types of system calls** (Windows vs UNIX table, p. 68).
+  - 11.1.1, pp. 450–452: HDD seek and rotational latency.
+  - 12.4.2–12.4.3, pp. 509–511: buffering and caching.
+  - 14.6.2, pp. 583–586: synchronous vs asynchronous writes (p. 585).
+- **ULK Ch 7, p. 262 and pp. 265–266:** SCHED_FIFO/SCHED_RR semantics.
+- **ULK Ch 10, pp. 398–399:** POSIX APIs vs system calls.
+- **Slides:** L10 pp. 5–12.
 
 **Transcript fixes:** "pipo / q4 / before" → FIFO · "protein point" → floating point · "mandesa" → mantissa · "flutter / plaster / plotter" → platter · "HPA" → HBA (host bus adapter) · "lc / LC" → lseek · "sys architecture / trist" → CISC / RISC · "man to exit" → `man 2 exit` · "Lipsy" → libc.
 
@@ -446,6 +447,8 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
   - argv/environment at the top
 
   `int *values` lives on the stack and points into the heap. A dynamically allocated *array* keeps random access; a linked list loses it. Code and data are kept in separate segments to suit the split L1 I-cache and D-cache.
+- **Linux run-time image (slide L11 p. 7):** read-only segment (`.init/.text/.rodata`) from `0x08048000`, read/write segment (`.data/.bss`), heap up to `brk`, shared libraries at `0x40000000`, user stack below `0xc0000000`, kernel memory above it.
+- **UNIX process image (slide L11 p. 12, Stallings Table 3.10):** *user-level context* (text, data, user stack, shared memory), *register context* (PC, processor status register, stack pointer, general registers), *system-level context* (process table entry, U area, per-process region table, kernel stack). This slide isn't in the transcript; learn it from Stallings.
 - **5-state model:** the dispatcher/short-term scheduler handles ready ↔ running; the long-term scheduler handles new → ready (no return); blocked → ready only; timeout arrow running → ready; terminated until the parent reaps.
 - **Adding suspend states:**
   - The **medium-term scheduler reduces** multiprogramming.
@@ -485,16 +488,17 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 
 **Read**
 - **T1:**
-  - **3.1.1: process memory layout**, including the C-program layout figure (text / initialized / uninitialized / heap / stack / argc, argv).
-  - 3.1.2: process states.
-  - 3.2.2: swapping as the medium-term scheduler.
-  - 9.1.2: binding.
-  - **10.6: thrashing** (10.6.2 working set, 10.6.3 PFF).
-  - 11.6: swap space.
-- **Stallings 3.2:** five-state model and **two suspend states (7-state figure)**.
-- **Stallings 3.6:** UNIX SVR4 process states (state diagram + table).
+  - **3.1.1, pp. 106–108: process memory layout** (Fig 3.1, p. 106; the "Memory Layout of a C Program" sidebar, p. 108).
+  - 3.1.2, pp. 107–109: process states (Fig 3.2, p. 109).
+  - 3.2.2, p. 113: swapping as the medium-term scheduler.
+  - 9.1.2, pp. 352–353: binding.
+  - **10.6, pp. 419–425: thrashing** (10.6.2 working set pp. 422–424, 10.6.3 PFF pp. 424–425).
+  - 11.6, pp. 467–469: swap space.
+- **Stallings 3.2, pp. 117–126:** five-state model (p. 117) and **two suspend states (7-state Fig 3.9, p. 123)**.
+- **Stallings 3.7, pp. 147–150:** UNIX SVR4 process states (Table 3.9 and Fig 3.17, p. 148) and the UNIX process image (Table 3.10, p. 149).
 
   These are the diagrams he's teaching from; **Silberschatz has no 7-state or SVR4 diagram**.
+- **Slides:** L11 pp. 2–12.
 
 **Transcript fixes:** "keep" → heap · "rerolling section" → read-only section · "clashing" → thrashing · "mid-time / with time scheduler" → medium-term scheduler · "NDMS / NDM" → endianness / endian. **Ignore everything after "D, Y, C, R, 1 is the class."**
 
@@ -518,7 +522,7 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
   - `TASK_NEW`: created but not yet on a run queue.
   - `TASK_RTLOCK_WAIT`.
   - `EXIT_ZOMBIE`, `EXIT_DEAD`, `EXIT_TRACE`.
-  - Composites: `TASK_KILLABLE` = WAKEKILL | UNINTERRUPTIBLE · `TASK_IDLE` = UNINTERRUPTIBLE | NOLOAD · `TASK_NORMAL` = INTERRUPTIBLE | UNINTERRUPTIBLE.
+  - Composites: `TASK_KILLABLE` = WAKEKILL | UNINTERRUPTIBLE · `TASK_IDLE` = UNINTERRUPTIBLE | NOLOAD · `TASK_NORMAL` = INTERRUPTIBLE | UNINTERRUPTIBLE · `TASK_REPORT` = the states reported to user space (RUNNING, INTERRUPTIBLE, UNINTERRUPTIBLE, STOPPED, TRACED, EXIT_DEAD, EXIT_ZOMBIE, PARKED; slide L12 p. 7).
   - `TASK_STATE_MAX` marks how many bits are in use.
 - **Why per-core run queues rather than one shared queue:**
   1. Cache affinity. Forked children share code, and data too until COW. Moving a task to another core means rebuilding its cache and paying coherence traffic.
@@ -542,16 +546,17 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 
 **Read**
 - **T1:**
-  - 3.1.2–3.1.3, including the **"Process representation in Linux" (`task_struct`) sidebar**.
-  - 3.3.2: orphans reparented to init/systemd.
-  - **5.3.2: exponential averaging**.
-  - **5.5.1: common vs per-core run queues**.
-  - **5.5.3: push/pull migration**.
-  - **5.5.4: soft/hard affinity, `sched_setaffinity`**.
-  - 5.7.1: CFS load balancing, scheduling domains.
-  - 20.5.4: SMP.
-- **Linux task states aren't in Silberschatz.** Use **ULK Ch 3, "Process State"** (it lists an older subset) plus the kernel's `include/linux/sched.h`. His slide list matches the current `sched.h`.
-- **T2 17.6:** multiprocessor scheduling (handout L17+).
+  - 3.1.2–3.1.3, pp. 107–109, plus the **"Process Representation in Linux" (`task_struct`) sidebar, p. 111**.
+  - 3.3.2, pp. 121–122: orphans reparented to init/systemd (p. 122).
+  - **5.3.2, pp. 207–209: exponential averaging** (formula p. 208).
+  - **5.5.1, p. 220: common vs per-core run queues**.
+  - **5.5.3, p. 224: push/pull migration**.
+  - **5.5.4, p. 225: soft/hard affinity, `sched_setaffinity`**.
+  - 5.7.1, pp. 237–238: CFS load balancing, scheduling domains (p. 238).
+  - 20.5.4, pp. 794–795: SMP.
+- **Linux task states aren't in Silberschatz.** Use **ULK Ch 3, "Process State", pp. 81–83** (it lists an older subset) plus the kernel's `include/linux/sched.h`. His slide list (L12 pp. 3–7) matches the current `sched.h`.
+- **ULK Ch 7, pp. 284–290:** runqueue balancing in multiprocessor systems.
+- **Load and energy:** Sil 5.5.3, p. 225 (what a "balanced load" means); 5.7.1, p. 238 (CFS load = priority and average CPU utilization, not queue length); 12.4.8, p. 515 (disabling unneeded cores saves power).
 
 **Transcript fixes:** "SIP / sick stop, sick continue" → SIGSTOP / SIGCONT · "SME" → SMP · "full migration" → **pull** migration · "4-0" → core 0 · "messy knot" → MESI.
 
@@ -560,7 +565,6 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 ### Lec 13: PCB / `task_struct`; PID allocation; the three PCB categories; nice, static/dynamic priority, quantum formula
 
 **Outline**
-- **Online 1:** ADT only, a simple question (no syscall). Syscall assignments are done offline and demoed to him.
 - **PCB basics:**
   - `task_struct` is defined in `include/linux/sched.h`; it's very long.
   - The **PCB stays in RAM** for as long as the process exists; it's never swapped.
@@ -569,7 +573,7 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
   - `pid_max` is configurable (32767 is the classic value).
 - **PID allocation is next-fit and circular**, starting from the last allocated PID. So a child's PID can be **smaller** than its parent's once the counter wraps. Never assume child PID > parent PID.
 - **Three PCB categories** (Stallings' wording, which he uses):
-  1. **Process identification:** at minimum **PID + PPID** (like `.` and `..` in a directory). Also UID, GID, effective UID, **session ID**, and **TGID**. In a thread, `getpid()` returns the thread-group leader's ID; the thread's own PID is hidden. UID and GID are mainly for *resource* access (owner/group/other; `waitpid` on a process group).
+  1. **Process identification:** at minimum **PID + PPID** (like `.` and `..` in a directory). Also UID, GID, effective UID, **session ID**, **TGID**, and (slide L13 p. 6) a Linux **personality identifier** that slightly changes some system calls' semantics. In a thread, `getpid()` returns the thread-group leader's ID; the thread's own PID is hidden. UID and GID are mainly for *resource* access (owner/group/other; `waitpid` on a process group).
   2. **Processor state information.** *Not* "process state": it's all the registers (general-purpose, PC, status, flags). SAVE_ALL saves every register whether it's used or not, which is **why context-switch *time* is constant**.
   3. **Process control information:** state, priorities, scheduling class and policy, `cpus_allowed` mask, privileges, memory, resources, `utime/stime/gtime`, **`nvcsw/nivcsw`** (voluntary vs involuntary context switches), exit code and exit signal.
 - **Environment:**
@@ -598,15 +602,17 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 
 **Read**
 - **T1:**
-  - **3.1.3: PCB + Linux `task_struct` sidebar**.
-  - 3.3.1: process tree and PIDs.
-  - **5.1.4: dispatcher** (voluntary/nonvoluntary switches in `/proc/<pid>/status`).
-  - **5.7.1: nice values**, CFS (O(1) is mentioned historically).
-  - 13.3: path names.
-- **Stallings 3.3:** the table of **typical PCB elements**, organised into exactly his three categories.
-- **ULK Ch 3:** process descriptor, PID hash and pidmap.
-- **ULK Ch 7:** static priority, **base time quantum formula**, dynamic priority and bonus.
-- Note: this formula is from the **O(1) scheduler** (pre-2.6.23). Current Linux uses CFS/EEVDF weights. The handout lists both O(1) and CFS for L17–L22, so learn both.
+  - **3.1.3, p. 109: PCB**, and the Linux `task_struct` sidebar, p. 111.
+  - 3.3.1, pp. 116–117: process tree and PIDs.
+  - **5.1.4, pp. 203–204: dispatcher** (voluntary/nonvoluntary switches in `/proc/<pid>/status`, p. 204).
+  - **5.7.1, pp. 234–238: nice values** (p. 236), CFS (O(1) is mentioned historically).
+  - 13.3.3, pp. 545–547: path names.
+  - 20.4.1, pp. 787–788: argument and environment vectors (his environment slide follows this wording).
+- **Stallings 3.3, pp. 128–133:** the table of **typical PCB elements** (Table 3.5, p. 130), organised into exactly his three categories.
+- **ULK Ch 3, pp. 81–91:** process descriptor, PID hash and pidmap (p. 84).
+- **ULK Ch 7, pp. 262–266:** static priority, **base time quantum formula (p. 263)**, dynamic priority and bonus (p. 264).
+- **Slides:** L13 pp. 2–13. **Notion p. 9** (PCB categories).
+- Note: this formula is from the **O(1) scheduler** (pre-2.6.23). Current Linux uses CFS/EEVDF weights; CFS itself is scheduled for handout L17–L22 and hasn't been taught.
 
 **Transcript fixes:** "sked.h / step.h" → `sched.h` · "pgid" → tgid · "RP priority" → rt_priority · "sked underscore before / rr / other" → SCHED_FIFO / SCHED_RR / SCHED_OTHER · "cross" → thread (pthread) · "nb csw / niv csw" → nvcsw / nivcsw · "g time" → gtime · "I0 number" → inode number · "foreign separated" → colon-separated.
 
@@ -615,11 +621,6 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 ### Lec 14: `wait()`, exit status, orphans; fork-tree tracing
 
 **Outline**
-- **Online logistics:**
-  - Log in to local Quanta beforehand.
-  - Accounts are IP-bound to your lab machine; access from anywhere else is logged and *you* are penalized.
-  - **No phones in the lab, even switched off.**
-  - The online will be easier than the previous year's paper, with at least one test bench provided. It's ADT format with full error handling.
 - **`wait()`:**
   - Waits for **any one** child and **returns that child's PID**.
   - Its single argument is a pointer where the OS stores the status.
@@ -639,11 +640,32 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 
 **Read**
 - **T1:**
-  - **3.3.1:** `fork()`, `exec()`, `wait()` code and figures.
-  - **3.3.2:** `wait()`, status, zombies, orphans, init/systemd.
-  - **Ch 3 exercises on "how many processes are created".** They're exactly this style; he said the midsem will be harder than the class samples.
+  - **3.3.1, pp. 116–120:** `fork()`, `exec()`, `wait()` code and figures (Figs 3.8–3.9, pp. 118–119).
+  - **3.3.2, pp. 121–122:** `wait()`, status, zombies, orphans, init/systemd.
+  - **Fork-count exercises:** practice exercises 3.1–3.2, p. 154 (Figs 3.30–3.31, pp. 155–156) and chapter exercises 3.11–3.16, pp. EX-4–EX-7 (the online exercise pages after Ch 3 in `ASOC.pdf`). They're exactly this style; he said the midsem will be harder than the class samples.
+  - **Fork + threads:** exercises 4.17 and 4.19, pp. EX-9–EX-10 (the 2025 Q4 style).
+- **Stallings 3.4, pp. 136–137:** the generic process-creation steps on his slide (allocate space, initialize the PCB, set up linkages, create or expand data structures).
+- **Slides:** L14 pp. 4–8 (process creation; `fork1.c`, `fork2.c`). **Notion pp. 10–17** (fork examples, orphans).
 
 **Transcript fixes:** "sylvan" → children · "unit process" → init process · "weigh / weight" → wait · "if not for / if 4" → `if (!fork())` / `if (fork())`.
+
+---
+
+### Lec 15: fork drills with `wait` and exit status (slides only; no transcript)
+
+The audio exists but hasn't been transcribed. The slides (L15, 11 Sep) are the programs he traced; §7.9 of the AOS textbook works them through.
+
+**Outline**
+- **`fork2.c`:** the child does `exit(3)`; the parent does `termret = wait(&status)` and prints `status/256`. `wait` returns the child's PID; the exit value is in bits 8–15, so the raw status is 768 and `status/256` is 3.
+- **`fork3.c`:** `fork(); fork();` → 4 processes, each printing "My PID"; each process calls `wait(NULL)` twice (extra calls just return −1).
+- **`fork4.c`:** `if (fork()) if (!fork()) fork();` → 4 processes. The parent creates C1 and C2; only C2 (the child of the inner `!fork()`) runs the last `fork()`, creating C3.
+- **`fork5.c`:** `for (i=0;i<2;i++) fork();` → 4 processes; with `i<3` → 8. `while (wait(NULL) != -1);` reaps every child.
+- **`fork6.c`:** loop `j<2`: `if (fork()) {} else if (!fork()) { print x; exit(0); }` → 7 processes; 3 print X=0 and exit.
+
+**Read**
+- **Slides:** L15 pp. 2–7.
+- **T1 3.3.1–3.3.2, pp. 116–122**, and the Ch 3 fork-count exercises (p. 154; pp. EX-4–EX-7).
+- **Notion pp. 12–16:** `fork2.c` and `fork3.c` walked through (exit status 3, `status/256`; four processes).
 
 ---
 
@@ -662,21 +684,20 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 - **PID search:** next-fit, circular from the last allocated PID. That usually gives a larger PID than the parent's, but not always.
 - **pidmap bitmap:** finding the next free PID is ~O(1) bit operations.
 - **Zombies still hold their PID** and count toward per-user limits. Reap your children. This is also one reason even servers get rebooted occasionally.
-- **Tangents (skip for the exam):** datacenter redundancy (N+1 UPS, active-active firewalls, dual ISPs, ring fiber, splicing).
 - PCBs are never swapped (again). Placement vs replacement (again). Formatting only clears metadata; overwrite to erase.
 - **`real_parent` vs `parent`:**
   - `real_parent` = the creator (or init if the creator is gone).
   - `parent` = who receives SIGCHLD.
   - They differ only under **ptrace** (a debugger). They're the same 99% of the time.
 - **Family links:** the parent points to its **first child and last child**. Siblings are doubly linked (next/prev), with the list closing back at the parent. That's enough to traverse the whole tree with fixed-size structs.
-- **Group syscall assignment:** 12 problems involving kernel process-tree traversal; he runs a viva and asks for each member's contribution; due after the midsem.
 
 **Read**
 - **T1:**
-  - 3.3.1: Linux process tree figure and `pstree`.
-  - 3.3.2.
-  - 20.4.
-- **ULK Ch 3:** "Identifying a Process" (PID, pidmap, pid_max), "**Relationships Among Processes**" (real_parent, parent, children, sibling), "Process 0 and Process 1". Silberschatz barely covers these.
+  - 3.3.1, pp. 116–117: Linux process tree figure, `pstree`, and the init/systemd sidebar (p. 117).
+  - 3.3.2, pp. 121–122.
+  - 20.4, pp. 786–790.
+- **ULK Ch 3:** "Identifying a Process", pp. 83–91 (PID, pidmap p. 84, pid_max), "**Relationships Among Processes**", pp. 91–96 (real_parent, parent, children, sibling; Table 3-3 p. 91), "Process 0" and "Process 1", pp. 124–125. Silberschatz barely covers these.
+- **Slides:** L16 pp. 2–3 (`fork8.c`, `fork9.c`), L17 pp. 2–5.
 
 **Transcript fixes:** "LC / L sieve" → else-if · "exccl" → execl · "pplp" → PPID · "2132767" → 2 … 32767 · "sketch / scan" → sched (swapper) · "p-trace" → ptrace.
 
@@ -742,68 +763,103 @@ This is mostly lab material. It matters for the onlines, not much for the midsem
 
 **Read**
 - **T1:**
-  - 3.3.1.
-  - **4.6.1: fork/exec semantics with threads**.
-  - **4.7.2: Linux threads, `clone()` flags** (CLONE_FS/VM/SIGHAND/FILES). This is his process-vs-thread file-table point.
-  - 10.3: COW.
-  - **13.1.2: per-process vs system-wide open-file tables**.
-  - 14.2.
-  - **14.4.3: the UNIX inode combined scheme.** Silberschatz draws **12** direct pointers; he used **10**. Use his number in his exam.
-  - 10.9.2: page size.
-  - 20.4.
-- **ULK Ch 3:** "Creating Processes: `clone()`, `fork()`, `vfork()`", `do_fork()`, `copy_process()`.
-- **Stallings 3.6:** the fork step list, verbatim.
+  - 3.3.1, pp. 116–120.
+  - **4.6.1, p. 188: fork/exec semantics with threads**.
+  - **4.7.2, pp. 195–196: Linux threads, `clone()` flags** (CLONE_FS/VM/SIGHAND/FILES, Fig 4.22). This is his process-vs-thread file-table point.
+  - 10.3, pp. 399–401: COW.
+  - **13.1.2, pp. 532–536: per-process vs system-wide open-file tables**.
+  - 14.2, pp. 566–568.
+  - **14.4.3, pp. 575–577: the UNIX inode combined scheme.** Silberschatz draws **12** direct pointers (Fig 14.8, p. 577); he used **10**. Use his number in his exam.
+  - 10.9.2, pp. 431–432: page size.
+  - 20.4, pp. 786–790.
+- **ULK Ch 3, pp. 114–122:** "Creating Processes": `clone()`, `fork()`, `vfork()` (pp. 115–117), `do_fork()` (pp. 117–119), `copy_process()` (pp. 119–122). ULK3 describes Linux 2.6; his slide list is the older 2.2 version, so write his steps.
+- **ULK Ch 3, pp. 101–102:** process resource limits (the soft/hard limit check in `do_fork`).
+- **ULK Ch 3, p. 118 and Ch 7, p. 269:** child-runs-first and the quantum split, in the kernel code.
+- **Notion pp. 18–20:** COW, vfork, `do_fork` signature.
+- **Stallings 3.7, pp. 151–152:** the fork step list, verbatim.
+- **Slides:** L18 pp. 2–7.
 
 **Transcript fixes:** "four / port" → fork · "2004" → do_fork · "sketch / swapper" → sched/swapper · "nr underscore task underscore min" → NR_TASKS / MIN_TASKS_LEFT_FOR_ROOT · "pf underscore use the FPU" → PF_USEDFPU · "excc / EFCC" → exec · "W linked" → doubly linked · "piles" → files · "crippling" → triple indirect · "lamborghs" → Lamport's · "nice … plus 90" → +19. **Ignore everything after the inode section** (student chatter).
 
 ---
 
+### Lec 18: vfork, wait/waitpid, exec, environment, process switching and termination (slides only; no transcript)
+
+Slides L18 (20 Sep) go past the last transcript (Lec 17 ends at `do_fork` and the inode). Everything below is from the slides.
+
+**Outline**
+- **vfork:** like `fork` but no copy of the address space or page table; memory, stack included, is shared; the parent is suspended until the child calls `exec()` or `_exit()`. Useful when the child will `exec` immediately.
+- **`wait(int *status)` / `waitpid(pid, status, options)`:**
+  - `wait` suspends the parent until a child exits (or a signal arrives). If a child has already exited it returns at once, and the child's resources are freed. It returns the child's PID.
+  - `waitpid` `pid`: < −1 → any child in process group |pid|; −1 → any child; 0 → any child in the caller's process group; > 0 → that child.
+  - Options: `WNOHANG` (return 0 at once if no child has exited), `WUNTRACED` (stopped children), `WCONTINUED` (children resumed by SIGCONT). Returns the PID, 0 with `WNOHANG`, or −1 on error.
+- **exec family:** `execl`, `execlp`, `execle`, `execv`, `execvp`, `execve`. **l** = list, **v** = vector, **p** = PATH search, **e** = explicit environment. Returns only on failure (−1). His example runs `ps -ax` in the child.
+- **Environment variables:** `echo $VAR`; `printenv`/`env` (global only); `set` (global and local); `export NAME=value` (global); `NAME=value` (local); per-user files `.bashrc`, `.bash_profile`, `.bash_login`, `.profile`; common ones `$USER $PATH $HOME $PWD $HOSTNAME $LANG $EDITOR $UID $SHELL`.
+- **When to switch a process:** clock interrupt (quantum over), I/O interrupt, memory fault, trap (error; may send the process to Exit), supervisor call (e.g. file open).
+- **Context switch:** save the old state, load the new one from its PCB; pure overhead; its time depends on hardware support.
+- **Change of process state (7 steps):** save processor context → update the running process's PCB → move the PCB to the right queue (ready, blocked, ready/suspend) → select another process → update its PCB → update memory-management structures → restore its context.
+- **Termination:** reasons (normal completion, time limit, errors, failures, operator/OS intervention, parent terminated, parent request). A parent may **abort** a child that exceeded its resources, whose task is no longer needed, or because the parent is exiting (**cascading termination** on some systems).
+- **`_exit(status)`:** closes fds, children go to init, status goes to the parent through `wait`.
+- **`do_exit()`:** set `PF_EXITING`; `sem_exit()`, `del_timer()`; `__exit_mm/files/fs/sighand`; state → `TASK_ZOMBIE`; store `exit_code`; `exit_notify()`; `schedule()`.
+- **`release()`** (when the zombie is reaped): `free_uid()`, `add_free_taskslot()`, `nr_tasks--`, `unhash_pid()`, `REMOVE_LINKS`, `free_task_struct()` frees the 8 KB.
+
+**Read**
+- **Slides:** L18 pp. 8–27.
+- **T1:** 3.2.3, pp. 114–115 (context switch); 3.3.1–3.3.2, pp. 116–122; 10.3, p. 400 (`vfork`); 20.4.1, pp. 786–789.
+- **Stallings 3.4, pp. 137–140:** when to switch (Table 3.8, p. 137) and the change-of-state steps (p. 139); **Stallings 3.2, pp. 116–117:** reasons for termination (Table 3.2).
+- **ULK Ch 3, pp. 126–131:** "Destroying Processes" (2.6 version: `do_exit`, `release_task`).
+- **Notion pp. 20–28:** `wait`/`waitpid` options and the exec family.
+
+---
+
 ## 2. Consolidated reading list for Silberschatz 10e
 
-This is the list above, deduplicated and in chapter order, so you can read the book front to back. ★ marks sections where he spent a lot of time or asked the class directly.
+This is the list above, deduplicated and in chapter order, so you can read the book front to back. ★ marks sections where he spent a lot of time or asked the class directly. Pages are from `ASOC.pdf`.
 
-| Ch | Sections | Lectures |
+| Ch | Sections (pages) | Lectures |
 |---|---|---|
-| 1 Introduction | 1.2.1–1.2.3 · ★1.3.1–1.3.3 · 1.4.1 · ★1.4.2 · ★1.4.3 · 1.5.5 · 1.7 · 1.8 | 3, 7 |
-| 2 OS Structures | ★2.3.1–2.3.3 · 2.5 · ★2.8.1–2.8.5 · 2.9.1 | 4, 5, 6, 8, 10 |
-| 3 Processes | ★3.1.1–3.1.3 (+ task_struct sidebar) · 3.2.1–★3.2.3 · ★3.3.1–3.3.2 · 3.8.2 · **Ch 3 fork-count exercises** | 5, 7–9, 11–17 |
-| 4 Threads | 4.4.1 · ★4.6.1 · ★4.7.2 | 6, 17 |
-| 5 CPU Scheduling | 5.1.1–5.1.4 · ★5.3.2 · 5.3.3–5.3.4 · ★5.5.1–5.5.5 · ★5.7.1 | 3, 10, 12, 13 |
-| 9 Main Memory | ★9.1.1–9.1.5 · ★9.2.1–9.2.3 · ★9.3.1–9.3.3 · 9.5 · ★9.6.1 | 5, 8, 9, 11 |
-| 10 Virtual Memory | 10.2.1 · ★10.3 · 10.4.1 · ★10.6 · 10.9.2 · 10.9.5 | 5, 6, 9, 11, 17 |
-| 11 Mass Storage | 11.1 · 11.5.1 · ★11.6 | 5, 10, 11 |
-| 12 I/O | 12.2.3–12.2.4 · 12.3.1 · 12.4.2–12.4.3 | 4, 7, 10 |
-| 13 FS Interface | ★13.1.2 · 13.3 | 4, 13, 17 |
-| 14 FS Implementation | 14.2 · 14.4.3 · 14.6 | 4, 17 |
-| 17 Protection | 17.3 | 7 |
-| 18 Virtual Machines | 18.4–18.5 | 7 |
-| 20 Linux | 20.2–20.5 | 4, 5, 9, 12, 16, 17 |
+| 1 Introduction | 1.2.1 (8–11) · ★1.3.1–1.3.3 (15–20) · 1.4.1 (23–24) · ★1.4.2 (24–25) · ★1.4.3 (26) · 1.5.5 (30–32) · 1.7 (34) · 1.8 (35) · 1.10.5–1.10.6 (44–45) | 3, 7 |
+| 2 OS Structures | ★2.3.1–2.3.3 (62–73; Fig 2.7 p. 66) · ★2.8.1–2.8.5 (82–91) | 4, 5, 8, 10 |
+| 3 Processes | ★3.1.1–3.1.3 (106–109; C-layout sidebar p. 108; `task_struct` sidebar p. 111) · 3.2.2 (113) · ★3.2.3 (114–115) · ★3.3.1–3.3.2 (116–122) · 3.8.2 (149–152) · **fork-count exercises (3.1–3.2, p. 154; 3.11–3.16, pp. EX-4–EX-7)** | 5, 7–9, 11–18 |
+| 4 Threads | 4.4.1 (169–170) · ★4.6.1 (188) · ★4.7.2 (195–196) · **fork + thread exercises 4.17, 4.19 (EX-9–EX-10)** | 6, 17 |
+| 5 CPU Scheduling | 5.1.4 (203–204) · ★5.3.2 (207–209) · 5.3.3–5.3.4 (209–213) · ★5.5.1–5.5.5 (220–226) · 5.6.6 (233) · ★5.7.1 (234–238) | 3, 10, 12, 13 |
+| 9 Main Memory | ★9.1.1–9.1.5 (350–356) · ★9.2.1–9.2.3 (357–360) · ★9.3.1–9.3.3 (360–369) · 9.5 (376–379) · ★9.6.1 (379–382) | 5, 8, 9, 11 |
+| 10 Virtual Memory | 10.2.1 (393–396) · ★10.3 (399–401) · 10.4.1 (401–404) · ★10.6 (419–425) · 10.9.2 (431–432) · 10.9.5 (433–434) | 5, 6, 9, 11, 17 |
+| 11 Mass Storage | 11.1.1 (450–452) · 11.5.1 (463–465) · ★11.6 (467–469) | 5, 10, 11 |
+| 12 I/O | 12.2.3–12.2.4 (494–500) · 12.3.1 (503–504) · 12.4.2–12.4.3 (509–511) | 4, 7, 10 |
+| 13 FS Interface | ★13.1.2 (532–536) · 13.3.3 (545–547) | 4, 13, 17 |
+| 14 FS Implementation | 14.2 (566–568) · 14.4.3 (575–577) · 14.6 (582–586) | 4, 10, 17 |
+| 17 Protection | 17.3 (669–671) | 7 |
+| 18 Virtual Machines | 18.4–18.5 (707–719) | 7 |
+| 20 Linux | 20.2–20.5 (780–795) | 4, 5, 9, 12, 13, 16, 17 |
 
 **Not in Silberschatz. Read these for the listed lectures:**
 
 | Source | What | Lectures |
 |---|---|---|
-| **T2** Singhal & Shivaratri **16.1–16.5** | Tightly/loosely coupled, UMA/NUMA/NORMA, interconnects, caching and coherence | 3 |
-| **Stallings Ch 3** (3.2, 3.3, 3.5, 3.6) | Suspend and 7-state model; the 3 PCB categories; mode vs process switch; UNIX SVR4 states; fork steps | 8, 11, 13, 17 |
-| **R7 ULK Ch 3** | Linux task states, pidmap/pid_max, real_parent/parent/children/sibling, process 0/1, `do_fork`/`copy_process` | 12, 13, 16, 17 |
-| **R7 ULK Ch 7** | O(1) static/dynamic priority, base-quantum formula, FIFO/RR | 9, 10, 13 |
-| **R7 ULK Ch 2 and 10** | Linux segmentation (GDT/LDT); `int 0x80` handler, parameter passing, pointer verification | 4, 8, 10 |
+| **T2** Singhal & Shivaratri **16.1–16.5, pp. 435–441** | Tightly/loosely coupled, UMA/NUMA/NORMA (p. 437), interconnects, caching and coherence | 3 |
+| **T2 5.2, pp. 97–99** | No global clock, no shared memory: why distributed synchronization is hard | 3 |
+| **Stallings Ch 3**: 3.2 (pp. 111–126), 3.3 (pp. 126–135), 3.4 (pp. 135–140), 3.5 (pp. 140–143), 3.7 (pp. 147–152) | Suspend and 7-state model (Fig 3.9 p. 123); the 3 PCB categories (Table 3.5 p. 130); mode vs process switch (pp. 138–139); execution of the OS; UNIX SVR4 states (Fig 3.17 p. 148), process image (Table 3.10 p. 149), fork steps (p. 151) | 8, 11, 13, 14, 17, 18 |
+| **R7 ULK Ch 3, pp. 79–131** | Linux task states (pp. 81–83), pidmap/pid_max (pp. 83–91), real_parent/parent/children/sibling (pp. 91–96), resource limits (pp. 101–102), `clone`/`fork`/`vfork` and `do_fork`/`copy_process` (pp. 114–122), process 0/1 (pp. 124–125), destroying processes (pp. 126–131) | 12, 13, 16, 17, 18 |
+| **R7 ULK Ch 7, pp. 258–290** | Scheduling classes (p. 262), base-quantum formula (p. 263), dynamic priority (p. 264), FIFO/RR (pp. 265–266), runqueue balancing (pp. 284–290) | 9, 10, 12, 13 |
+| **R7 ULK Ch 1, 2, 9, 10** | Links and file types (pp. 14–19); Linux segmentation, GDT/LDT (pp. 36–45); the heap and `brk` (pp. 395–398); `int $0x80` handler, parameter passing, pointer verification (pp. 398–412) | 4, 7, 8, 10 |
 | Kernel source | `include/linux/sched.h` (task states, `task_struct`), `arch/x86/entry/syscalls/syscall_64.tbl`, `kernel/fork.c` | 9, 12, 13, 17 |
 
-Stallings isn't on the handout, but his PCB wording, 7-state figure, SVR4 diagram and fork list match it word for word. If you can't get it, the lecture outlines above cover what he said.
+Stallings isn't on the handout, but his PCB wording, 7-state figure, SVR4 diagram, process-image table and fork list match it word for word. Page numbers are from the 6th edition; the SVR4 section is §3.7 in 6e (§3.6 is Security Issues).
 
 ---
 
 ## 3. Where his lecture differs from the textbook (give his answer in his exam)
 
-1. **NUMA.** He defines NUMA through the cache hierarchy (your own L1 vs another core's L1, then L2/L3) and says "UMA is never used." Silberschatz 1.3.2 and T2 16.3 define NUMA as memory local to each CPU/node and present UMA/SMP as a real design. Know both, and lead with his.
-2. **TLB miss = OS exception + page-table walk + re-executed instruction** (so 1000 accesses with 100 misses = 1100 TLB accesses). That's the software-managed-TLB model (e.g., MIPS). x86 walks the page table in hardware, and Silberschatz's EAT formula doesn't count the retry. He explicitly said "textbooks get this wrong," so use his counting.
-3. **Inode direct pointers: he used 10**; Silberschatz Fig 14.8 uses 12.
-4. **Priority and quantum formulas are the O(1) scheduler's**; Silberschatz 5.7.1 centres on CFS. Know the formula *and* CFS.
+1. **NUMA.** He defines NUMA through the cache hierarchy (your own L1 vs another core's L1, then L2/L3) and says "UMA is never used." Silberschatz 1.3.2 (pp. 18–19) and T2 16.3 (p. 437) define NUMA as memory local to each CPU/node and present UMA/SMP as a real design. Know both, and lead with his.
+2. **TLB miss = OS exception + page-table walk + re-executed instruction** (so 1000 accesses with 100 misses = 1100 TLB accesses). That's the software-managed-TLB model (e.g., MIPS). x86 walks the page table in hardware, and Silberschatz's EAT formula (p. 367) doesn't count the retry. He explicitly said "textbooks get this wrong," so use his counting.
+3. **Inode direct pointers: he used 10**; Silberschatz Fig 14.8 (p. 577) uses 12.
+4. **Priority and quantum formulas are the O(1) scheduler's** (ULK pp. 263–264); Silberschatz 5.7.1 (pp. 234–238) centres on CFS, which he hasn't taught. Know the formula.
 5. **i3/i5/i7/i9 = hyper-threading/turbo combinations** is his own framing and isn't in any text. It's historically loose, so reproduce it only if he asks.
-6. **"Only hard and symbolic links exist; there's no such thing as a soft link."** Use his terminology.
-7. **Child gets half the parent's *remaining* quantum and runs first (on a uniprocessor with equal priority).** This is 2.6-era Linux behaviour; Silberschatz only says the order is unspecified.
+6. **"Only hard and symbolic links exist; there's no such thing as a soft link."** ULK (p. 14) says "soft link". Use his terminology.
+7. **Child gets half the parent's *remaining* quantum and runs first (on a uniprocessor with equal priority).** This is 2.6-era Linux behaviour, and ULK shows it in the code (child inserted before the parent, p. 118; time slice halved, p. 269). Silberschatz (§3.3.1, pp. 116–120) only says the order is unspecified.
 8. **The 7-state and SVR4 models aren't in Silberschatz** (see §2).
+9. **`do_fork` / `do_exit` steps are the Linux 2.2 versions** on his slides (L18 pp. 5–7, 26–27); ULK3 (pp. 117–131) describes 2.6. Write his steps.
 
 ---
 
@@ -815,8 +871,9 @@ The midsem syllabus is whatever he covers up to then (threads are next). From wh
 2. **Process state models:** 5 → 7 (suspend) → SVR4 → Linux task states, including which transitions exist and *why* (Lec 11, 12).
 3. **Fork tracing with variables, `wait`, `exit` and `exec`.** He said the midsem questions will be harder than the class samples, so do the Silberschatz Ch 3 exercises and invent your own (Lec 14, 16).
 4. **PCB and priorities:** three PCB categories, PID allocation, the nice → static priority → quantum arithmetic (Lec 13).
-5. **fork internals, COW, vfork, file tables, process vs thread** (Lec 9, 17).
+5. **fork internals, COW, vfork, file tables, process vs thread; `wait`/`waitpid`, `exec`, termination** (Lec 9, 17, 18).
 6. **Context switch cost, TLB, placement vs replacement** (Lec 9).
 7. **Memory protection:** segmentation (LDT/GDT numbers), paging entries, fragmentation (Lec 8).
 8. **Layered vs monolithic vs microkernel vs hybrid** (Lec 4, 5).
 9. **Multiprocessor basics:** coupling, coherence, NUMA/NORMA, per-core run queues, push/pull migration, affinity (Lec 3, 12).
+10. **Threads and synchronization, once he teaches them:** last year they were 15 of 75 midsem marks. The AOS textbook's Chapters 9–10 cover them with page references.
