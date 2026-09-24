@@ -1,0 +1,1320 @@
+# CS G525 Advanced Computer Networks — Course Textbook
+
+Sep 24, 2026 · @foidslayer
+
+## How to use this book
+
+This book turns Prof. Vinayak Naik's G525 lectures up to 24 Sep 2026 into continuous reading. It is for the midsem on Oct 5, 2026: Monday, closed book, 90 min, 25%. Where his slides or class answers disagree with a textbook, his version comes first, because he sets and marks the paper.
+
+**Sources, in order of authority**
+
+| # | Source | What it gives you | Coverage |
+| --- | --- | --- | --- |
+| 1 | His slides: Kurose 9e decks K4 (network layer, data plane), K6 (link layer), K7 (wireless and mobile); the Mobile IP deck (MIP, Kurose 6e slides 6-34 to 6-47); PHY2 (channel and capacity) and PHY3 (modulation), both from Mythili Vutukuru's IIT Bombay CS 653 | What was taught, in what order, and the figures he draws from | K4, K6, K7 only for the pages on his Classroom topic lists; MIP, PHY2 and PHY3 in full |
+| 2 | Past papers: midsems 23-24, 24-25, 25-26; compres 23-24, 24-25, 25-26; 24-25 assignments (Wireshark ARP, TCP/HTTP headers); 23-24 class notes (42 pp.) | His question patterns, red-pen marking and midsem answer keys (the key is in the class notes) | Every midsem question, plus the compre questions on midsem topics |
+| 3 | Project docs: midsem post-mortem, reading guide, PHY reading material; the "Naik's Midsem Patterns" artifact | Topic blocks, slide page ranges, how he frames and marks | Whole midsem scope |
+| 4 | Handout (First Semester 2026-27, dated 1 Aug 2026) | Course plan: module 3 lists DSR, AODV, DSDV, OLSR and ZRP; module 6 is wireless (12 lectures, "class notes") | Topic list only |
+| 5 | Kurose & Ross 8e (**K8e**, main text), Peterson & Davie 5e (**P&D**), Tanenbaum 5e (**Tan**) | Formal definitions, extra depth, figures | Printed page numbers from the PDFs on your machine |
+| 6 | Senior's Notion notes (2024 class) | Lecture-by-lecture paraphrase of the same course | Corroboration only. Errors are flagged inline as **Notion check**. |
+
+Two notes on the books. The handout names Kurose 6e and the slides are 9e, but the copy you have is 8e, so every section and page reference here is to 8e. Your `coursework-textbooks` connector was failing on 24 Sep, so the page numbers were read directly from the three PDFs in `sem1/ACN/`.
+
+**Reading conventions**
+
+- **★ Exam** marks something from a past paper, e.g. ★ M25 Q4. M23, M24 and M25 are the midsems of 9 Oct 2023, 5 Oct 2024 and 6 Oct 2025. C23, C24 and C25 are the compres of Dec 2023, 2024 and 2025. The marks are given where the paper shows them.
+- **His answer** marks a point where his slides, class notes or answer key differ from the textbook. Write his version.
+- **Why** paragraphs matter more than the facts. He marks one block per named mechanism. He has docked marks for a missing key term (he wrote "hop count" in the margin) and for a missing condition ("No Internet", "Condition?").
+- **Scenario questions** close each chapter, written in his style: first-person administrator, sub-parts of 2–3 marks. The model answers **bold** each mechanism he would credit and always end with a **Conditions:** line.
+- **Interview link** is a one-line placement angle, included only where the link is real.
+- **Read** gives the slide pages and textbook sections for that chapter.
+
+**Midsem scope (taught up to 24 Sep 2026)**
+
+His lecture order is fixed: link layer → router internals → NAT → Mobile IP → physical layer → VLAN → MANET → SDN → security. The midsem cut fell after VLAN in 24-25 and after MANET in 25-26.
+
+| Ch | Topic block | Slides | Status on 24 Sep |
+| --- | --- | --- | --- |
+| 1 | Link layer: IP vs MAC, subnets, ARP, routing across subnets, self-learning switches | K6 p39–51, 60–71; K4 p47–50, 59–61 | Taught |
+| 2 | Router internals and generalized forwarding | K4 p2–8, 14–33, 78–90 | Taught |
+| 3 | NAT, including his NAT Q&A session | K4 p64–68 | Taught |
+| 4 | Wireless links and 802.11 | K7 p6–12, 23–24, 59–73 | Taught (deck posted 7 Sep) |
+| 5 | Mobility and Mobile IP | MIP, all | Taught (7 Sep) |
+| 6 | Wireless PHY I: spectrum, channel, SNR, bandwidth, Shannon | PHY2, all | Taught (8 Sep) |
+| 7 | Wireless PHY II: modulation, ISI, OFDM, coherence | PHY3, all | Taught (15 Sep) |
+| 8 | VLAN and VXLAN | K6 p73–80 | On his K6 topic list and next in his order. Confirm it has been lectured. |
+| 9 | MANET: OLSR and AODV | none (class notes only) | **May be examined.** It took 12 of 30 marks in M25. |
+
+**Not in this book:** routing-algorithm traces (Dijkstra, distance vector), TCP congestion control, CRC and multiple-access protocols, Ethernet frame details, DHCP internals, IPv6, and packet scheduling. None of these is on his topic lists or in any of his papers. Kurose Ch 3 and Ch 5 are not taught.
+
+**The paper:** about 5 questions and 30 marks, with sub-parts of 2–3 marks. That is about 3 minutes per mark and roughly half a page of space per question. Every question so far has been a scenario: "In my department…", "Why cannot I…", "How do I stop…". None of the 15 midsem questions in three years asked for a definition.
+
+**Answer template (memorise the shape):**
+
+1. Name the mechanism in one line: the word he would write in the margin.
+2. Give the causal chain, one arrow per step.
+3. Give the fix and what it costs.
+4. Draw a tuple, table or 4-node sketch (NAT rows, a per-hop MAC/IP table, switch tables, 802.11 address 1–3).
+5. End with **Conditions:** in one line. Every time.
+
+## Chapter 1 — The link layer: addresses, ARP and switches (K6)
+
+A packet crosses the Internet on IP addresses but crosses every single link on MAC addresses. Almost every link-layer question he sets comes down to which address is used where, who resolves it, and what a switch does when its table is empty or wrong. It has appeared in all three midsems.
+
+### 1.1 Two addresses, two jobs
+
+|  | IP address | MAC address |
+| --- | --- | --- |
+| Size | 32 bits, e.g. 137.196.7.78 | 48 bits, e.g. 1A-2F-BB-76-09-AD |
+| Layer | Network (L3) | Link (L2) |
+| Structure | Hierarchical: subnet part + host part | Flat, allocated by IEEE per manufacturer |
+| Portable? | No. It depends on the subnet you are attached to | Yes. Burned into the NIC ROM, so it moves with the card |
+| Scope | End to end, across networks | One link only, "from one interface to another physically-connected interface" |
+| Analogy (K6 p41) | Postal address | Social Security number |
+
+**His framing:** IP gets a packet *between* networks, and MAC gets it to the right interface *within* a network. You rely on MAC even when the destination is in another subnet, because you still need the gateway's MAC to hand the packet over.
+
+**Why have both?** With only MAC addresses, which are flat, every router would need one entry per host on Earth and nothing could be aggregated. With only IP addresses, a NIC would have to understand IP to filter frames, a LAN could carry nothing but IP, and an address that changes when you move could not name the hardware. So the split mirrors the layering: routing needs hierarchy, and a link needs a fixed hardware name.
+
+### 1.2 Subnets and hierarchical addressing
+
+A **subnet** is a set of interfaces that can reach each other physically without passing through a router (K4 p47). Recipe (K4 p48): detach every interface from its host or router, and each island left behind is a subnet. The address is written a.b.c.d/x, where the high-order x bits are the subnet part (CIDR, K4 p50).
+
+**His line (23-24 class notes):** "Subnet means all hosts inside the subnet can talk to each other without using a router. A LAN is one subnet." A longer network ID gives a smaller network with fewer host bits, and a shorter one gives a bigger network.
+
+**The same-subnet test.** A host ANDs the destination IP with its own mask. If the result equals its own network address, the destination is on-link: ARP for it directly. If not, send to the default gateway.
+
+**Route aggregation (K4 p59–61).** Addresses are handed out down a tree, so one prefix can summarise a whole subtree. Fly-By-Night-ISP advertises one route, 200.23.16.0/20, for eight organisations. If Organisation 1 (200.23.18.0/23) moves to ISPs-R-Us, the new ISP advertises the more specific /23, and longest-prefix match (Ch 2) sends its traffic the new way. That is why core routing tables stay small, and why you cannot just take any address you like (★ M24 Q3, Ch 5).
+
+### 1.3 ARP: IP → MAC on one link
+
+Every IP node keeps an **ARP table** of ⟨IP; MAC; TTL⟩, where the TTL is typically 20 min (K6 p42). When A wants B's MAC (K6 p43–45):
+
+1. A broadcasts an ARP query for B's IP, addressed to MAC FF-FF-FF-FF-FF-FF. Every node on the LAN receives it.
+2. B recognises its own IP and **unicasts** a reply with its MAC.
+3. A caches the pair until the TTL expires.
+
+ARP is plug-and-play: no administrator touches the tables. **His answer:** ARP is also self-learning. A node that hears a query learns the sender's IP–MAC pair for free, and a stale mapping simply ages out.
+
+**Gratuitous ARP** is a host announcing its own mapping without being asked (Tan p.469). Your 24-25 assignment 1 (Wireshark) was exactly this. A newly connected laptop sends an ARP **probe** for the address it wants, about three times. If nobody answers, it broadcasts an ARP **announcement** with sender IP = target IP = its own address. Every host and switch that hears it updates its table, which is why it matters for mobility (§1.6).
+
+**Failure modes, which is what he asks about:**
+
+- **Stale cache.** A machine changes its NIC or IP, and peers keep sending to the old MAC until the TTL expires or a gratuitous ARP overwrites the entry.
+- **Spoofing (ARP poisoning).** ARP has no authentication, and hosts accept unsolicited replies. An attacker announces "the gateway's IP is at my MAC", and every host then sends its off-subnet traffic through the attacker.
+- **Broadcast load.** Every query goes to every host in the broadcast domain. This is one reason one giant LAN does not scale (§1.5, Ch 8).
+
+★ **Exam (M23 Q1, 6 marks):** "Two nodes in the same subnet do not need routing… then how does network layer data from one node reach another node using the network addresses?" **His answer key (class notes):** "Layer 3 → encapsulation of the network packet into a DLL frame." Model answer:
+
+1. **Same-subnet test** on the destination IP says the destination is on-link, so no gateway is needed.
+2. **ARP**: broadcast the query, get the unicast reply, cache the mapping.
+3. **Encapsulation**: the IP datagram (src IP, dst IP) goes inside a frame with dst MAC = B and src MAC = A.
+4. **Self-learning switches** forward the frame on the MAC address alone.
+5. B's NIC accepts the frame because its MAC matches and passes the datagram up.
+
+**Conditions:** same subnet, same broadcast domain, B is up and answers ARP.
+
+### 1.4 Routing to another subnet: who rewrites what (K6 p46–51)
+
+A (111.111.111.111) sends to B (222.222.222.222) through router R. A needs three things: B's IP, R's IP (the default gateway, learned from DHCP) and **R's MAC** (from ARP). A never needs B's MAC.
+
+| Hop | MAC src | MAC dst | IP src | IP dst |
+| --- | --- | --- | --- | --- |
+| A → R (left interface) | 74-29-9C-E8-FF-55 (A) | E6-E9-00-17-BB-4B (R, left) | 111.111.111.111 | 222.222.222.222 |
+| R (right interface) → B | 1A-23-F9-CD-06-9B (R, right) | 49-BD-D2-C7-56-2A (B) | 111.111.111.111 | 222.222.222.222 |
+
+The **IP pair never changes, and the MAC pair changes at every router hop.** R strips the frame, looks up B's prefix, ARPs for B on its right interface, and builds a new frame. **Always draw this table.** He credits the tuple more than prose.
+
+★ **Exam (C24 Q10, 4 marks):** "When I use Wireshark to open a frame, I read the IP addresses and then MAC addresses. I decrypted the destination IP addresses using the public key of the end host. Correct the mistake(s)." There are three mistakes:
+
+1. The order is reversed. A frame is read outside-in, so the MAC header comes first and then the IP header.
+2. IP headers are not encrypted. Every router must read the destination IP to forward the packet.
+3. A public key encrypts and only the private key decrypts, so nobody decrypts with the end host's public key.
+
+The scored script named only the second one and got 2 of 4.
+
+### 1.5 Self-learning switches (K6 p60–71)
+
+A switch is a store-and-forward L2 device. It is **transparent** (hosts do not know it is there), **plug-and-play**, and gives every host a dedicated full-duplex link. So there are no collisions, and each link is its own collision domain. A-to-A′ and B-to-B′ can run at the same time. A-to-A′ and C-to-A′ cannot, because both want the same output port.
+
+**Switch table:** ⟨MAC, interface, TTL⟩. When a frame arrives (K6 p65):
+
+1. **Learn**: record (source MAC → incoming interface).
+2. **Look up** the destination MAC.
+3. If found and it is on the interface the frame came in on, **filter** (drop). If found elsewhere, **forward** on that one interface. If not found, **flood** on every interface except the incoming one.
+
+**It works unchanged across a tree of switches (K6 p67–68).** In the tree, S4 connects to S1 (A, B, C), S2 (D, E, F) and S3 (G, H, I), and all tables start empty. C sends to I, then I replies to C:
+
+| Switch | After C → I (flooded) | After I → C (forwarded) |
+| --- | --- | --- |
+| S1 | C → port to C | + I → port to S4 |
+| S4 | C → port to S1 | + I → port to S3 |
+| S2 | C → port to S4 (it received the flood) | unchanged; the reply never reaches S2 |
+| S3 | C → port to S4 | + I → port to I |
+
+**Switch vs router (K6 p71).** Both store and forward. A router works at L3, and its table is *computed* by routing algorithms over IP prefixes. A switch works at L2, and its table is *learned* by flooding over flat MAC addresses.
+
+**His answer (Notion, his lecture):** your "WiFi router" is really a switch for the LAN side plus a router, a NAT, a DHCP server and a modem in one box. In today's data centres, where devices look at every layer, people just say "switch" for all of them.
+
+**Why not build the campus as one giant switched LAN?**
+
+- ARP, DHCP and unknown-unicast floods reach every host.
+- Switch tables grow with every host, and every entry that ages out causes flooding again.
+- Self-learning needs a loop-free **tree**. In a mesh, a flooded frame circulates forever, which is why real switches run a spanning-tree protocol.
+- Flat MAC addresses cannot be aggregated.
+- Everyone can see everyone's broadcasts.
+
+The answer is routers at the top and switches below (UMass campus, K6 p69–70): border, core, aggregation and building-closet switches, IS-IS inside, BGP outside, about 15 staff. Ch 8 gives VLANs as the other answer.
+
+★ **Exam (C23 Q6, 3 marks):** "Even if a switch has infinite buffer space, why does the reliability of data transmission at the data link layer reduce when the number of nodes increases?" A bigger buffer only removes drops *inside* the switch. The losses come from elsewhere:
+
+- More flooding and broadcast traffic (ARP, DHCP, unknown MACs), because tables churn.
+- **Output-port contention**, when many senders target one host or the uplink.
+- **Receiver buffers** at the hosts overflow.
+- On shared or wireless segments, more collisions.
+
+### 1.6 Mobility inside a LAN without a router
+
+★ **Exam (M25 Q3, 2 + 4):** "How does an organization provide mobility within the same network without using a networking device that understands routing? (a) Mention the condition(s). (b) Mention network setup and protocol(s) used."
+
+**(a) Conditions.** The device keeps its IP, so it must stay inside the **same subnet and broadcast domain**. Only L2 devices (switches, APs) sit between the old and new positions. The organisation gets **no Internet access** from this setup, because nothing routes. The grader wrote "No Internet" in the margin of a script that missed this, so name it.
+
+**(b) Setup and protocol.** Use a tree of self-learning switches in which host A moves from a port on S2 to a port on S4 (draw the tree; the scored script got +4 for it). The moment A transmits from its new port, every switch on the path relearns (A's MAC → new port). To make that immediate rather than waiting for A's next packet or the TTL, A sends a **gratuitous ARP**: a broadcast carrying its own IP and MAC. The broadcast reaches every switch, so all tables are corrected at once, and ARP caches on other hosts stay valid because A's IP and MAC did not change.
+
+**Textbook version (K8e §7.3.4 pp.556–557):** H1 moves between two BSSs joined by a switch, not a router. Because the two BSSs share one subnet, H1 keeps its IP and its ongoing TCP connections. The switch table is stale until H1 sends a frame, so the new AP broadcasts an Ethernet frame with H1's source MAC right after H1 associates. If the interconnecting device were a router, H1 would need a new IP, its TCP connections would break, and you would need Mobile IP (Ch 5).
+
+### 1.7 Two networks joined together
+
+★ **Exam (M25 Q5, 2 + 2 + 2):** "In routing, (a) what is different between the two networks that are joined together? (b) What is the task of the device that joins them? (c) How do I stop traffic from one network from going into another network?"
+
+- **(a)** They have **different network prefixes** (different subnets) and are **separate broadcast domains**. Their switches only forward within their own LAN. They may also run different link technologies.
+- **(b)** The **router** terminates the incoming frame, does a **longest-prefix match** on the destination IP, decrements the TTL, ARPs for the next hop on the outgoing side, and **builds a new frame** with its own MAC as the source. It never forwards L2 broadcasts from one network to the other.
+- **(c)** Put an **access-control list / packet filter** on the router interface: match source prefix = network 1 and destination prefix = network 2, then drop. In generalized-forwarding terms (Ch 2), this is a match on IP src/dst with action *drop*. Another option is to withhold the route. **Conditions:** the router must be the *only* path between the two networks, the filter trusts source addresses (spoofing defeats it), and you may need the rule in both directions. The scored script wrote "the router does not allow it" with no mechanism and got 1 of 2.
+
+### 1.8 Scenario questions in his style
+
+**Q1.** "I plugged a new server into port 7 of my lab switch. The first frame to it went out of every port, but later frames did not. (a) Why? (2) (b) I then moved the server to port 3 and for a minute nobody could reach it. Why, and how does it heal? (3)"
+
+- (a) **Self-learning**: the destination MAC was not in the switch table, so the switch **flooded**. The server's reply taught the switch (MAC → port 7), and later frames were **forwarded** on port 7 only.
+- (b) The table still says port 7 (a **stale entry**), so frames go to an empty port. It heals when the server **transmits from port 3**, because the switch relearns immediately, or when the entry's **TTL** expires and flooding resumes. A **gratuitous ARP** from the server forces the relearn at once. **Conditions:** one switch, or a tree of switches; no static MAC entries.
+
+**Q2.** "Two machines on the same switch are configured as 10.1.1.5/24 and 10.1.2.7/24. There is no router. (a) Why can't they ping each other? (2) (b) What must I add, and what are the MAC and IP addresses on the first frame the sender puts on the wire? (3)"
+
+- (a) The **same-subnet test** fails, so the sender looks for its **default gateway**. There is none, so it has nobody to ARP for. The switch is irrelevant: nothing is ever sent to it.
+- (b) Add a **router** (or an L3 switch) with an interface in each subnet, and set it as each host's gateway. First frame: dst MAC = the router's interface in 10.1.1.0/24 (learned by **ARP** for the gateway's IP); src MAC = the sender; dst IP = 10.1.2.7; src IP = 10.1.1.5. **Conditions:** the hosts know the gateway address (DHCP or static), and the router has both prefixes in its table.
+
+**Q3.** "Someone in my department is reading everyone's web traffic without touching the router. (a) Which mechanism is being abused, and why does it work? (3) (b) How do I stop it? (2)"
+
+- (a) **ARP spoofing/poisoning.** The attacker sends unsolicited ARP replies binding the **gateway's IP to the attacker's MAC**. ARP has **no authentication** and hosts cache what they hear, so every host frames its off-subnet traffic to the attacker, who forwards it on.
+- (b) Use **static ARP entries** for the gateway on critical hosts, **dynamic ARP inspection** on managed switches (check replies against DHCP bindings), or port security. Or move the sensitive users to their own **VLAN** (Ch 8). **Conditions:** the attacker is in the same broadcast domain, and the fix needs managed switches.
+
+**Interview link:** a switch table is a cache with TTL invalidation and flood-on-miss, the same pattern as a service-discovery cache. The per-hop MAC/IP table is the core of "what happens when you type google.com" (K8e §6.7).
+
+**Read:** K6 p39–51, 60–71; K4 p47–50, 59–61. K8e §4.3.2 pp.333–344 (subnets pp.334–336, aggregation p.339); §6.4.1 pp.478–484; §6.4.3 pp.491–497; §7.3.4 pp.556–559; §6.7 pp.512–518 (optional revision). P&D §3.2.5 p.220, §3.2.6 p.228, §3.1.4 pp.189–202 (learning bridges p.190). Tan §4.8.2 p.334; ARP pp.467–469.
+
+**Notion check:** "MAC address gets changed every time the packet gets transmitted" is loose. The *frame's* MAC header is rewritten at each router hop, but the NIC's MAC never changes. "ARP learns by listening" is only half of it: ARP also actively broadcasts a query when there is no entry.
+
+## Chapter 2 — Inside a router, and generalized forwarding (K4)
+
+A router is a line-rate pipeline: an input port, a switching fabric and an output port, controlled by a slower routing processor. Every question he sets here asks where packets pile up and why. Generalized forwarding then shows that a router, a switch, a firewall and a NAT are all one match-plus-action table.
+
+### 2.1 Data plane vs control plane (K4 p5–8)
+
+|  | Forwarding (data plane) | Routing (control plane) |
+| --- | --- | --- |
+| Question | Which output port for *this* packet? | Which path, network-wide? |
+| Scope | Local, per router | Network-wide |
+| Timescale | Nanoseconds | Milliseconds to seconds |
+| Built in | Hardware | Software on the routing processor |
+| Analogy | Getting through one interchange | Planning the whole trip |
+
+The control plane can be built in two ways. **Per-router control**: every router runs its own routing algorithm, and they exchange messages. **SDN**: a remote controller computes the tables and installs them in the routers.
+
+**His framing (class notes):** the routing processor is a CPU. It computes the forwarding table and pushes a copy to each input port, which is the "slower" part. The fabric and ports are the "faster" hardware. The hardware's only job is to move bits as fast as possible, and the software decides where they go.
+
+### 2.2 The input port (K4 p15–22)
+
+There are three stages:
+
+1. **Line termination.** Physical-layer bit reception: copper, fibre or wireless.
+2. **Link-layer receive.** Frames are assembled, checked and stripped (e.g. Ethernet).
+3. **Lookup, forwarding and queueing.** The destination is looked up in the port's own copy of the forwarding table ("match plus action"), and the packet waits if the fabric is busy.
+
+**Decentralized switching:** every input port holds a copy of the table, so lookups do not queue at the central CPU. The goal is to finish input processing at **line speed**. **His annotation:** lookup-and-forward (input port → correct output port) is the most important function.
+
+**Destination-based vs generalized forwarding (K4 p16).** Traditional routers forward on the destination IP only. Generalized forwarding matches any set of header fields (§2.6).
+
+**Longest-prefix match (K4 p18–21).** When several table entries match, use the one with the longest matching prefix.
+
+| Destination address range | Interface |
+| --- | --- |
+| 11001000 00010111 00010\*\*\* \*\*\*\*\*\*\*\* | 0 |
+| 11001000 00010111 00011000 \*\*\*\*\*\*\*\* | 1 |
+| 11001000 00010111 00011\*\*\* \*\*\*\*\*\*\*\* | 2 |
+| otherwise | 3 |
+
+- 11001000 00010111 00010**110** 10100001 matches only the first row (21 bits), so it goes to **interface 0**.
+- 11001000 00010111 00011000 10101010 matches row 2 (24 bits) and row 3 (21 bits). The longer match wins, so it goes to **interface 1**.
+
+**Why LPM?** Aggregated prefixes coexist with more-specific exceptions, like the organisation that changed ISPs in Ch 1.2. The more specific route must win.
+
+**TCAM (his notes, K4 p22).** A ternary content-addressable memory stores 0, 1 and **don't-care**. You present an address and get the matching entry back in **one clock cycle, regardless of table size**, so a whole range of IP addresses is searched at once. A Cisco Catalyst holds about 1M entries. The cost is that TCAM is expensive and power-hungry. That cost is the reason tables are kept small by aggregation.
+
+### 2.3 Switching fabrics (K4 p23–28)
+
+The fabric moves a packet from an input buffer to the right output buffer. With N inputs of rate R, a switching rate of **N×R** is desirable.
+
+| Fabric | How it works | Bottleneck | Parallel? |
+| --- | --- | --- | --- |
+| Memory | First-generation routers: the CPU copies the packet into system memory, then out | Memory bandwidth. Each datagram crosses the system bus **twice** | No |
+| Bus | The input port writes straight to the output port over a shared bus | **Bus contention**: one packet at a time, so the rate is capped by the bus speed (32 Gbps Cisco 5600, fine for access routers) | No |
+| Interconnection network | Crossbar, Clos or multistage: N×N built from smaller switches. Datagrams are cut into fixed-length cells, switched and reassembled | Two packets to the same output still conflict. More stages cost more | Yes. Cisco CRS: 8 planes of 3-stage networks, 100s of Tbps |
+
+**His ranking (class notes):** memory is slowest, bus is next and crossbar is fastest (a mesh with the least congestion). "There's a trade-off for each of the fabrics": speed and parallelism against cost.
+
+### 2.4 Where queueing happens
+
+**Input-port queueing (K4 p29).** If the fabric is slower than all the inputs combined (< N×R), packets wait at the inputs, which adds delay and loss when input buffers overflow. **Head-of-line (HOL) blocking:** two inputs each have a red packet at the head of the queue, both for the same output, so only one crosses. The **green packet behind the losing red one waits even though its own output is idle.**
+
+**Output-port queueing (K4 p30–31).** His slide says "this slide is HUGELY important". Even with a fast fabric, if packets arrive for one output faster than its line rate R (N inputs all sending to one output), the output buffer fills. Two policies then decide the outcome. The **drop policy** says which packet to lose when the buffer is full. The **scheduling discipline** says which packet goes next, which is where priority and network neutrality come in.
+
+★ **Exam (M24 Q2, 3 + 3):** "Mention two scenarios when the input buffer port of a switch starts filling up."
+
+1. **The fabric is slower than the combined input rate.** Packets queue at the inputs, and **HOL blocking** makes it worse: when two head packets contend for the same output (**output port contention**), everything behind the loser waits.
+2. **Lookup and forwarding cannot keep up with line speed.** Packets arrive faster than the input port can decide their output port. Examples are a slow lookup, or a table miss in an SDN switch that must ask the controller.
+
+A third option you can name is **back-pressure from a full output buffer**: the fabric cannot hand packets to an output that has no space, so they wait at the inputs. The scored script gave (1) and (2) and got full marks.
+
+**How much buffering? (K4 p32).** The RFC 3439 rule of thumb is B = RTT × C. With a 250 ms RTT and a 10 Gbps link, that is 2.5 Gbit. With N flows, the newer rule is B = RTT × C / √N. **Too much buffer causes bufferbloat**: queues stay full, delay grows, TCP reacts late and real-time apps suffer, especially on home routers.
+
+**Buffer management (K4 p33).** Dropping can be tail drop (drop the arriving packet) or priority-based. Marking (ECN, RED) signals congestion before the buffer is full. Packet scheduling (FCFS, priority, RR, WFQ) is on the slides but not on his topic list. Know the names only.
+
+### 2.5 Generalized forwarding: match plus action (K4 p78–87)
+
+Every router's forwarding table becomes a **flow table**. Each entry has four parts:
+
+- **Match:** values or wildcards on any header field. L2: ingress port, src/dst MAC, Ethernet type, VLAN ID and priority. L3: IP src/dst, protocol, ToS. L4: TCP/UDP src/dst port.
+- **Action:** forward to port(s), drop, modify header fields, or encapsulate and send to the controller.
+- **Priority:** breaks ties between overlapping patterns.
+- **Counters:** bytes and packets.
+
+| Device | Match | Action |
+| --- | --- | --- |
+| Router | Longest destination IP prefix | Forward out a link |
+| Switch | Destination MAC | Forward or flood |
+| Firewall | IP addresses and TCP/UDP ports | Permit or deny |
+| NAT | IP address and port | Rewrite address and port |
+
+One abstraction therefore unifies four boxes. The slide examples: IP dst = 51.6.0.8 → port 6; TCP dst port = 22 → drop (block ssh); IP src = 128.119.1.1 → drop; MAC dst = 22:A7:23:11:E1:02 → port 3.
+
+**Orchestrated example (K4 p85–86).** Traffic from h5 and h6 (`10.3.*.*`) must reach h3 and h4 (`10.2.*.*`) via s1 and then s2:
+
+| Switch | Match | Action |
+| --- | --- | --- |
+| s3 | IP src = `10.3.*.*`, IP dst = `10.2.*.*` | forward(3) |
+| s1 | ingress port = 1, IP src = `10.3.*.*`, IP dst = `10.2.*.*` | forward(4) |
+| s2 | ingress port = 2, IP dst = 10.2.0.3 | forward(3) |
+| s2 | ingress port = 2, IP dst = 10.2.0.4 | forward(4) |
+
+**His vocabulary for actions (23-24 class notes):** forward or "all" (broadcast); **drop**, used for a firewall; **modify**, used for NATing; **enqueue**, used to rate-limit (his example is an ISP slowing a user who pays less). A **table miss** goes to the controller, "like the catch in try–catch", and the controller installs a rule so later packets never leave the switch. The full SDN treatment is after the midsem. For now, know the table.
+
+**Middleboxes (K4 p88–90).** RFC 3234 defines a middlebox as "any intermediary box performing functions apart from normal, standard functions of an IP router" on the path. Examples are NAT, firewalls, IDS, load balancers and caches. The trend is away from proprietary boxes and towards whitebox hardware with open APIs and match+action, logically centralised SDN control, and **NFV** (network functions as software on commodity servers).
+
+### 2.6 Scenario questions in his style
+
+**Q1.** "My router is dropping packets for server S even though the link to S is idle. (a) Why? (3) (b) What would stop it? (2)"
+
+- (a) **HOL blocking at the input port.** S's packet sits behind a head packet waiting for a *different*, contended output. The fabric only moves the head of each input queue, so S's packet waits until the input buffer overflows and drops it.
+- (b) Use a **faster fabric** (≥ N×R), or **virtual output queues** (one queue per output at each input). **Conditions:** this only occurs when the fabric is slower than the combined input rate. With an N×R fabric, queueing moves to the outputs.
+
+**Q2.** "I have a 16-port 10 Gbps router whose fabric is a shared 40 Gbps bus. (a) When does it start queueing, and where? (2) (b) All 16 ports now send to port 1. Where do packets queue now? (2)"
+
+- (a) At the **input ports**, once the offered load is above 40 Gbps (more than four ports busy), because a bus moves **one packet at a time**.
+- (b) At the **output port** of port 1: 160 Gbps offered against a 10 Gbps line, so its buffer fills and the **drop policy** decides losses. The bus is also saturated at 40 Gbps, so inputs queue too. **Conditions:** equal packet sizes, all ports fully loaded.
+
+**Q3.** "Should I add 1 GB of buffer to my home router so it never drops? (3)"
+
+No. **Bufferbloat**: a full large buffer adds queueing delay to every packet, so video calls lag and TCP reacts late. **B = RTT×C/√N** is enough to keep the link busy. **Conditions:** the link is the bottleneck, and the traffic mixes long TCP flows with delay-sensitive apps.
+
+**Q4.** "Write the flow-table entries so that my switch (a) blocks ssh into 10.2.0.0/16, (b) sends everything else for 10.2.0.0/16 out of port 2, and (c) handles anything else it has never seen. (3)"
+
+| Priority | Match | Action |
+| --- | --- | --- |
+| High | IP dst = `10.2.*.*`, TCP dst port = 22 | drop |
+| Low | IP dst = `10.2.*.*` | forward(2) |
+| (table miss) | anything else | send to controller |
+
+**Conditions:** priorities must be set so the drop rule is checked first. Otherwise the broader rule shadows it.
+
+**Interview link:** the data/control split is exactly SDN, and exactly the Kubernetes control plane vs kube-proxy/eBPF. LPM in TCAM, HOL blocking and bufferbloat are standard networking-interview questions.
+
+**Read:** K4 p2–8, 14–33, 78–90. K8e §4.1.1 pp.304–309; §4.2 pp.311–325 (TCAM p.316, fabrics pp.317–319, queueing pp.319–324, bufferbloat p.324); §4.4 pp.353–360; §4.5 pp.360–364. P&D §3.4 pp.267–280 (HOL p.272, fabrics p.273, router implementation p.277; LPM p.228). Tan §5.1 p.355 (optional).
+
+**Notion check:** it says an input port may "request retransmission" after a CRC error. On Ethernet, a router's input port just **drops** a bad frame. Recovery is left to higher layers.
+
+## Chapter 3 — NAT (K4 p64–68 and his NAT Q&A session)
+
+NAT is his signature topic: it is in all three midsems and all three compres, and he gave it a dedicated Q&A lecture. **The whole story is the translation table, and an entry is created only by an outbound packet.** Every NAT failure he asks about is really a question of whether a row exists, whether it matches, and whether the table has run out of room.
+
+### 3.1 Why NAT exists (K4 p64–65)
+
+IPv4 ran out: ICANN handed the last blocks to the regional registries in 2011 (K4 p62). NAT lets a whole local network appear to the outside world as **one** IPv4 address. Hosts inside use **private** addresses: 10/8, 172.16/12 and 192.168/16. Those can be reused in every private network because they are never routed on the Internet.
+
+The slide lists four advantages:
+
+1. You need only one address from the ISP for all your devices.
+2. You can renumber hosts inside without notifying the outside world.
+3. You can change ISP without renumbering the inside.
+4. Hosts inside are **not directly addressable** from outside, which the slide calls "a security plus".
+
+**His examples:** your phone's hotspot is a NAT for your laptop. A VM on your laptop reaches the Internet through another NAT. You see more CAPTCHAs because many users share one public IP.
+
+### 3.2 The mechanism (K4 p66–67)
+
+The NAT router must do three things, transparently:
+
+- **Outgoing:** replace (source IP, source port) with (NAT IP, **new** port).
+- **Remember** the pair in the **NAT translation table**.
+- **Incoming:** replace the destination (NAT IP, new port) with the stored (private IP, port).
+
+It must also recompute the IP header checksum and the TCP/UDP checksum, because both cover the rewritten fields.
+
+| Step | Packet | Source | Destination |
+| --- | --- | --- | --- |
+| 1 | Host 10.0.0.1 sends to a web server | 10.0.0.1:3345 | 128.119.40.186:80 |
+| 2 | NAT rewrites and adds the row ⟨138.76.29.7:5001 ↔ 10.0.0.1:3345⟩ | 138.76.29.7:5001 | 128.119.40.186:80 |
+| 3 | Reply arrives | 128.119.40.186:80 | 138.76.29.7:5001 |
+| 4 | NAT looks up 5001 and rewrites | 128.119.40.186:80 | 10.0.0.1:3345 |
+
+**His answer to "why replace the port number?"** (a question students raised in the class notes). Every inside host shares the **same public IP**, so the port is the only field left to tell the connections apart. Two inside hosts may independently pick the same source port. The OS keeps ports unique *within* a host, but only the NAT can keep them unique *across* hosts, because it is the one box that sees everyone. That is why, in his words, the router has a vantage point "like a god". It picks a free public port (Notion: from 1024–65535) and records the mapping.
+
+Real NATs (Linux conntrack) usually also store the remote endpoint: ⟨192.168.1.10:1234 ↔ 203.0.113.2:56789 ↔ 203.0.113.100:80⟩.
+
+### 3.3 Reading the table
+
+★ **Exam (M25 Q4, 2 + 2 + 2):** "Give scenario(s) for NAT table entries. Explain a situation when two rows in the NAT table have (a) the same private port numbers, (b) the same public port numbers, (c) the same global IP address and the same local IP address." This script scored 6 of 6 by writing tuples.
+
+| Case | WAN side | LAN side | What happened |
+| --- | --- | --- | --- |
+| (a) Same private port | 138.76.29.7:5001 | 10.0.0.1:3001 | Two **different hosts** chose the same ephemeral port. The private IPs differ, so the NAT gives them **different public ports** |
+|  | 138.76.29.7:5002 | 10.0.0.3:3001 |  |
+| (b) Same public port | 200.0.16.23:5001 | 10.0.0.1:3001 | The NAT owns a **pool of public IPs**. The same port on two different public IPs is still a unique pair |
+|  | 200.0.16.30:5001 | 10.0.0.5:4410 |  |
+| (c) Same global IP and same local IP | 200.0.16.23:5001 | 10.0.0.1:3001 | **One host with two connections** (two browser tabs, or two servers). The local ports differ, so the public ports differ |
+|  | 200.0.16.23:5003 | 10.0.0.1:3005 |  |
+
+For (b) there is a second valid answer. A NAT that keys its table on the remote endpoint too (a "symmetric" NAT) can reuse one public port for two inside hosts talking to *different* servers, because the 5-tuple is still unique.
+
+★ **Exam (M24 Q5, 6 marks):** "If an organization has one public IP address and multiple machines… want to access the Internet, how can we modify their packets?" Walk through the four-step table above. Say that the **source IP and source port** are rewritten outbound, the **destination IP and port** inbound, and **checksums** are recomputed. Say the table disambiguates with **ports**. Close with **Conditions:** connections start inside, and there are at most about 64K simultaneous flows per public IP.
+
+### 3.4 The limits (his NAT Q&A)
+
+**Concurrency.** The port field is 16 bits, so one public IP gives about 65,535 mappings per transport protocol, fewer once reserved ports are excluded. His phrasing is that you are "restricted to 65k parallel connections". When they run out, new connections fail, or the NAT evicts the entry idle longest, "like a cache".
+
+★ **Exam (C23 Q5, 3 marks):** "Why does use of a NAT gateway restrict the number of concurrent Internet users?" Every flow needs a unique ⟨public IP, port⟩, so **port exhaustion** caps concurrent flows at about 64K per public IP. Each user holds several flows (a browser opens dozens), so the cap on users is far lower. Table memory and per-packet processing add further limits.
+
+★ **Exam (C24 Q9, 4 marks):** "What is the consequence if I double the number of external IP addresses available to a NAT gateway?" The mapping space doubles to 2 × 2¹⁶, so the NAT can hold about **twice the parallel connections**. His words: "buy another IP and send half to one and half to another." **Conditions:** the bottleneck really was the port space and not the NAT's CPU, table memory or uplink bandwidth. The NAT must spread flows across the pool. Some apps break if one session's connections appear from two different public IPs.
+
+**Performance.** Every packet is inspected, looked up, rewritten and re-checksummed, both ways. His note: "Access to the Internet is slowed down because of NAT." **Double NAT** (hotspot → laptop → VM, or carrier-grade NAT in 4G/5G) repeats that work. His advice is to avoid it as much as possible. He also mentioned nested NATs as a way around censorship.
+
+**Why NAT is controversial (K4 p68):**
+
+- A router "should" only process up to L3, and NAT rewrites L4 ports, which breaks **layering**.
+- The address shortage should have been solved by **IPv6**.
+- It violates the **end-to-end argument**, because the network changes what hosts sent.
+- **NAT traversal** is hard: outside clients cannot reach servers inside.
+
+NAT is here to stay anyway: it is in homes, institutions and 4G/5G networks.
+
+### 3.5 Connections initiated from outside: NAT traversal
+
+★ **Exam (M23 Q2, 6 marks):** "Why does use of NAT protocol break while using a P2P application?" ★ **Exam (C25 Q5, 4 marks):** "Why does the NAT protocol not work when the network connection is initiated from the WAN side?"
+
+**The causal chain:**
+
+1. An outside host sends to ⟨public IP, port⟩.
+2. **No table entry exists**, because entries are created only by outbound packets.
+3. The NAT cannot tell which inside host is meant, so it **drops** the packet.
+
+In P2P, **both** peers are usually behind NATs, so neither can initiate. A second failure is apps that put an IP:port **inside the payload** (FTP active mode, SIP/VoIP). The NAT rewrites headers, not payloads, so the peer is told a private address it cannot reach.
+
+**His examples:** online gaming and Zoom calls. Zoom's servers act as "a huge NAT table": every client connects *out* to them, which creates entries, and the call is then set up peer-to-peer. The 23-24 notes put it the same way: "Skype servers maintain records of users, and then P2P is initiated."
+
+| Fix | How | Cost / condition |
+| --- | --- | --- |
+| **Static port forwarding** | The admin manually adds ⟨public:port ↔ inside host:port⟩. His version: "both hosts manually make an entry in the NAT table" | Needs admin access to the NAT. One inside host per public port. **Does not scale.** |
+| **UPnP / IGD** | The inside host asks the NAT to create the entry automatically | The NAT must support and trust it, which is a security risk |
+| **Relay (TURN-style)** | Both peers connect *outbound* to a public server that forwards traffic | Always works. Costs server bandwidth and adds latency |
+| **Rendezvous + hole punching (STUN-style)** | A public server tells each peer the other's public IP:port, then both send outbound at once so both NATs create entries | The NAT must keep the same public port whatever the destination. **Fails with symmetric NAT**, so fall back to a relay |
+
+The Notion notes record his summary: "a server installed on the Internet where every machine logs in creates stable entries in the NAT table." That is the rendezvous/relay idea.
+
+### 3.6 Scenario questions in his style
+
+**Q1.** "I run a game server on my laptop in the hostel. I can join my friend's server at home, but he cannot join mine. (a) Why is it asymmetric? (2) (b) Give two fixes and the condition under which each works. (4)"
+
+- (a) My hostel NAT has **no entry** for his inbound connection, since entries are created only by **outbound** packets. When I connect to him, my outbound SYN creates the entry for his replies. His home router must already have **port forwarding** for his server, or the two NATs are of different kinds.
+- (b) Fix 1 is **static port forwarding** on the hostel NAT. It works only if I have **admin access**, and it pins one laptop to one public port. Fix 2 is a **rendezvous server with hole punching**, or a **relay**. Both of us connect out, so both NATs create entries. Hole punching works only if the NAT keeps the **same public port** for different destinations; otherwise use the relay, which costs its bandwidth and latency.
+
+**Q2.** "Our 500 machines share one public IP. During course registration, new connections fail although the uplink is only half used. (a) What ran out? (2) (b) Give two remedies and the cost of each. (4)"
+
+- (a) **Port-mapping space**: about 64K ⟨public IP, port⟩ pairs, with every browser holding tens of connections. It could also be **table memory**. The link is not the bottleneck.
+- (b) **Add public IPs to a NAT pool**, which doubles the space per IP added but costs addresses. **Shorten idle timeouts** for entries, which reclaims ports but can break long-idle connections. A third option is **IPv6** for services that support it. **Conditions:** mappings are per public IP per protocol, and no single app needs a fixed public IP.
+
+**Q3.** "My VM runs on my laptop, and my laptop uses my phone's hotspot. (a) How many NATs is a request from the VM crossing? Write the rows each one adds for a request to 142.250.1.1:80. (3) (b) Why is it slower than the laptop alone? (2)"
+
+- (a) **Two NATs**: the laptop (VM network) and the phone (hotspot). There may be a third, carrier-grade NAT at the ISP.
+
+| NAT | WAN side | LAN side |
+| --- | --- | --- |
+| Laptop | 192.168.43.10:50000 | 10.0.2.15:40000 (VM) |
+| Phone | 49.36.12.7:60000 | 192.168.43.10:50000 |
+
+- (b) **Each NAT inspects, looks up, rewrites and re-checksums every packet** in both directions, so the delay adds up. Each NAT's table is also a separate traversal barrier for inbound connections. **Conditions:** the NATs are software (phone OS, hypervisor), not hardware fast paths.
+
+**Interview link:** a NAT is a stateful connection-tracking proxy. It works like Linux netfilter conntrack, Kubernetes kube-proxy SNAT/DNAT and a load balancer's connection table. SNAT port exhaustion on cloud NAT gateways is a real production incident type, and Q2 describes it.
+
+**Read:** K4 p62, 64–68; the 2 Sep 2023 class notes (NAT Q&A). K8e §4.3.3 pp.344–346. P&D pp.335–336. Tan §5.6.2, "NAT" pp.451–454. For hole punching: Ford, Srisuresh & Kegel, "Peer-to-Peer Communication Across Network Address Translators" (USENIX ATC 2005), §§1–3.
+
+**Notion check:** "In NAT we use the transport layer for getting unique ports… because we can't touch IP or MAC" is wrong. NAT *does* rewrite the IP address, the source IP outbound and the destination IP inbound, and it rewrites the port *as well*. "After 65535 ports the same number will be generated" is also imprecise. The NAT refuses new mappings or evicts idle ones. It does not reuse a live port.
+
+## Chapter 4 — Wireless links and 802.11 (K7)
+
+A wireless link breaks two assumptions Ethernet relies on: everyone can hear everyone, and you can hear a collision while you transmit. 802.11 therefore avoids collisions instead of detecting them, and adds a third address so the AP can act as a pure L2 relay. This block has not been examined in a midsem yet (0/3), but it is on his K7 topic list and fits his scenario style well.
+
+### 4.1 Elements of a wireless network (K7 p6–12)
+
+- **Wireless hosts:** laptops, phones, IoT devices. **Wireless does not always mean mobile.**
+- **Base station:** a relay between the wired network and the wireless hosts in its area, e.g. a 4G/5G tower or an 802.11 access point (AP).
+- **Wireless link:** connects hosts to the base station, or acts as a backbone. A **multiple-access protocol** coordinates who sends. Links come in many rates, ranges and frequency bands (K7 p11).
+- **Infrastructure mode vs ad hoc.** In infrastructure mode, hosts talk through a base station. In **ad hoc** mode there is no base station, so hosts relay for each other. That leads into MANET (Ch 9).
+- A phone carries many radios (an iPhone 16 has about 11). WiFi is the *edge*, and the institutional wired network is the *core* (K7 p12).
+
+### 4.2 Why wireless links misbehave (K8e §7.2 pp.536–539)
+
+Compared with a wire, the signal has three problems:
+
+- It **weakens with distance** (path loss).
+- It suffers **interference** from other senders in the same band, including microwave ovens and phones.
+- It arrives by **multiple paths** at different times.
+
+The result is a much higher bit-error rate that also varies over time. The receiver's **SNR** decides how many bits you can carry reliably. Ch 6–7 explain the physics. Here we need only two consequences: collisions cannot be reliably *heard*, and frames are routinely lost, so the link layer needs ACKs.
+
+### 4.3 The hidden-terminal problem (K7 p23–24)
+
+A and B hear each other, and B and C hear each other, but **A and C cannot hear each other**. There are two causes:
+
+- **Path loss.** Signal strength falls roughly as (fd)², so C is below A's detection threshold.
+- **An obstacle** between A and C.
+
+Both A and C sense an idle channel and transmit, and their frames **collide at B**. Neither of them can detect it. The mirror case is the **exposed terminal** (Tan p.305): a station defers because it hears a sender whose transmission would not actually have interfered with its own.
+
+### 4.4 Why 802.11 cannot use collision detection
+
+A likely question (not yet asked): "Why can't WiFi use CSMA/CD like my Ethernet?" There are two reasons, and each is a mark (K8e p.548):
+
+1. **A radio cannot listen while it transmits.** Its own signal is far stronger than anything received, so detecting a collision would need costly full-duplex hardware.
+2. **Even with that hardware, the collision happens at the receiver, not the sender.** Because of hidden terminals and fading, the sender may hear nothing wrong.
+
+So 802.11 **avoids** collisions (CSMA/CA) and **confirms** delivery with link-layer ACKs.
+
+### 4.5 CSMA/CA (K7 p60–62)
+
+**Sender:**
+
+1. If the channel is idle for **DIFS**, transmit the **entire frame**. There is no collision detection, so a collided frame is sent in full anyway.
+2. If the channel is busy, pick a **random backoff**. The timer counts down **only while the channel is idle**, and the station transmits when it reaches 0.
+3. If no ACK arrives, **double the backoff range** (binary exponential backoff) and repeat step 2.
+
+**Receiver:** if the frame is OK, return an **ACK after SIFS**. **SIFS < DIFS**, so the ACK always wins the channel before any new data frame can start.
+
+**Why back off even after the channel goes idle?** Every station that was waiting would otherwise fire at the same instant the channel frees up and collide. A random countdown spreads them out. (Ethernet has no such rule because a collision there is detected and cut short. In 802.11 a collision wastes a whole frame.)
+
+Collisions still happen (K7 p60). B may sense idle before A's signal reaches it (**propagation delay**), or B may not hear A at all because of **fading** or hidden terminals.
+
+**Why an ACK when Ethernet has none?** On Ethernet, bit errors are rare and collisions are detected. On a wireless link, frames are lost to noise, fading and undetectable collisions, so the sender must be told explicitly.
+
+### 4.6 RTS/CTS: reserving the channel (K7 p63–64)
+
+1. The sender transmits a short **RTS** (request to send) to the AP using CSMA. It carries the **duration** of the data exchange to follow.
+2. The AP broadcasts a **CTS** (clear to send) carrying the same duration.
+3. **Everyone who hears the CTS defers** for that duration. That includes the hidden terminals, because they can hear the AP even though they cannot hear the sender. 802.11 calls this deferral the NAV.
+4. The sender transmits the data frame, and the AP ACKs it.
+
+RTS frames can still collide, but they are **short**, so a collision costs little. **The cost** is two extra frames and two SIFS gaps for every data frame. So RTS/CTS is used only above an **RTS threshold** of frame length (K8e pp.551–552).
+
+### 4.7 The 802.11 frame and its addresses (K7 p69–73)
+
+| Field | Frame control | Duration | Address 1 | Address 2 | Address 3 | Seq control | Address 4 | Payload | CRC |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Bytes | 2 | 2 | 6 | 6 | 6 | 2 | 6 | 0–2312 | 4 |
+
+- **Address 1:** MAC of the wireless host or AP that should **receive** this frame.
+- **Address 2:** MAC of the wireless host or AP **transmitting** this frame.
+- **Address 3:** MAC of the **router interface** the AP is attached to.
+- **Address 4:** used only in ad hoc mode or when APs relay to each other.
+
+**The AP is a link-layer device.** It converts frames between 802.11 and 802.3, and the router never learns the AP's MAC (K8e pp.554–556). Taking H1 → AP → R1 as the example:
+
+| Direction | Frame | Addr 1 / dst | Addr 2 / src | Addr 3 |
+| --- | --- | --- | --- | --- |
+| H1 → R1, on air | 802.11 | AP | H1 | R1 |
+| H1 → R1, on wire (AP converts) | 802.3 | dst = R1 | src = H1 | — |
+| R1 → H1, on wire | 802.3 | dst = H1 | src = R1 | — |
+| R1 → H1, on air (AP converts) | 802.11 | H1 | AP | R1 |
+
+**Why three addresses when Ethernet has two?** On the air, the frame's L2 receiver (the AP) is not its L2 destination (the router). Address 3 lets the AP build the Ethernet frame on the other side. In the downlink, it tells H1 which router the datagram came from. **Slide erratum:** if your copy of K7 p72 labels the 802.3 source as "H2", read it as H1.
+
+**Other fields (K7 p73):**
+
+- **Duration** is the reserved time, used for RTS/CTS and the NAV.
+- **Sequence number** lets the receiver discard duplicate retransmissions when an ACK was lost. This is the same job sequence numbers do in rdt 2.1.
+- **Frame control** has these subfields: type (0 management, 1 control, 2 data) and subtype (RTS, CTS, ACK, beacon, …); **to-AP / from-AP**, which decide how addresses 1–3 are read; more fragments, retry, power management, more data, and WEP.
+
+### 4.8 Scenario questions in his style
+
+**Q1.** "Two laptops at opposite corners of my lab each sense an idle channel, but when both upload at once their throughput collapses. (a) Why? (2) (b) What fixes it, and at what cost? (2) (c) Under what condition does your fix work? (1)"
+
+- (a) **Hidden terminals.** Each laptop is out of the other's range because of **path loss** or a wall, so carrier sense says idle. Their frames **collide at the AP**, get no ACKs, and are retransmitted with **exponential backoff**, so throughput collapses.
+- (b) **RTS/CTS.** The AP's CTS, carrying the **duration**, is heard by **both** laptops, so the hidden one defers. The cost is two control frames and SIFS gaps per data frame, which is why it is only enabled above an RTS threshold.
+- (c) **Conditions:** the AP hears both laptops, and the frames are long enough that the reservation costs less than the collisions it prevents.
+
+**Q2.** "Why does my WiFi card wait a random time before transmitting even when it has just found the channel idle after someone else's frame? (2)"
+
+Other stations were **also waiting** for the same busy period to end. Without a **random backoff** they would all transmit together the moment the channel frees, and in 802.11 a collision costs a **whole frame**, since there is no CD. The countdown pauses while the channel is busy, so the stations take turns. **Conditions:** several stations are contending and all can hear the channel.
+
+**Q3.** "My laptop H1 sends a datagram to the gateway R1 through the AP. (a) Write the addresses of the 802.11 frame on the air and of the Ethernet frame the AP puts on the wire. (3) (b) Why does R1 never learn the AP's MAC? (1)"
+
+- (a) 802.11: **addr1 = AP, addr2 = H1, addr3 = R1**. 802.3: **dst = R1, src = H1**.
+- (b) The AP is an **L2 relay** that converts frame formats. The Ethernet frame it sends carries H1 as its source, so to R1, H1 appears directly connected. **Conditions:** infrastructure mode, with the AP bridged into R1's subnet.
+
+**Interview link:** CSMA/CA's randomised exponential backoff is the same idea as "exponential backoff with jitter" for retries in distributed systems, which avoids a thundering herd of synchronised retries.
+
+**Read:** K7 p6–12, 23–24, 59–73. K8e §7.1 pp.532–536; §7.2 pp.536–539 (SNR p.536, hidden terminal pp.538–539); §7.3.2 pp.548–553; §7.3.3 pp.553–556. P&D §2.7 pp.133–141 (hidden node p.137, CSMA/CA p.138, distribution system p.139). Tan §4.2.5 pp.277–279; §4.4.3 pp.303–309 (hidden/exposed p.305); §4.4.4 p.309.
+
+**Notion check:** the senior's notes skip 802.11 entirely. The 23-24 class notes only record "multiple people communicate over the same frequency (WiFi); collision avoidance is used". Study it from the slides and K8e.
+
+## Chapter 5 — Mobility and Mobile IP (MIP deck)
+
+An IP address says where you are attached, and a TCP connection is named by its IP addresses. So moving to another network breaks your connections unless something keeps a stable address in front of you. Mobile IP does this with a home agent that tunnels packets to wherever you are. Everything he asks is about the cost of that indirection: triangle routing, transparency, scalability and packets lost during handoff. Mobility has appeared in 2 of 3 midsems.
+
+### 5.1 Why moving breaks connections (MIP p2)
+
+From the network's point of view, mobility is a spectrum:
+
+- **No mobility:** the same access point all the time.
+- **Reconnecting:** disconnect, move, and get a **new IP from DHCP**. Ongoing connections die.
+- **High mobility:** move across access points and networks **while keeping ongoing connections alive**, like a phone call. Mobile IP is for this case.
+
+**Why:** a TCP connection is identified by the 4-tuple (src IP, src port, dst IP, dst port). A new address from DHCP in a new subnet no longer matches the tuple, so the peer's segments go to the old address and the connection times out. You cannot simply keep the old address either, because routers deliver by **prefix**, so your old prefix still leads home (Ch 1.2).
+
+### 5.2 Vocabulary (MIP p3–4)
+
+| Term | Meaning | Example |
+| --- | --- | --- |
+| Home network | The mobile's permanent home | 128.119.40/24 |
+| **Permanent address** | Always reaches the mobile. The correspondent uses it | 128.119.40.186 |
+| **Home agent (HA)** | Performs mobility functions on the mobile's behalf while it is away | Router in the home network |
+| Visited network | Where the mobile is now | 79.129.13/24 |
+| **Care-of address (COA)** | The mobile's address in the visited network | 79.129.13.2 |
+| **Foreign agent (FA)** | Performs mobility functions in the visited network | Router in the visited network |
+| Correspondent | Wants to talk to the mobile | Any host |
+
+**The slide's analogy (MIP p5):** how do you reach a friend who keeps moving? You could search every phone book, which means letting routing find her and does not scale. You could call her parents, who always know where she is: that is the home agent, or **indirect** routing. Or she could tell you her new address herself: that is **direct** routing.
+
+### 5.3 Three approaches, and the one that doesn't scale (MIP p6–7)
+
+1. **Let routing handle it.** Routers advertise the mobile's permanent address, as a /32 host route, through normal routing exchanges, so their tables track each mobile. End systems need no changes. But this is **not scalable to millions of mobiles**: every move triggers a routing update across the network, and host routes destroy **aggregation**.
+2. **Indirect routing.** Traffic goes correspondent → home agent → foreign agent → mobile.
+3. **Direct routing.** The correspondent learns the COA and sends to the visited network directly.
+
+★ **Exam (M24 Q3, 3 + 3 + 2):** "Why cannot I use a random public IP address in a network? Mention three solutions to use one public IP address in any network. Which of these three solutions is not scalable?"
+
+- **Why not a random public IP (3):** IP addresses are **not portable**. Routers forward by **prefix**, using aggregation and longest-prefix match. A random public address belongs to someone else's prefix, so **replies are routed to that prefix's owner**, not to you. Your ISP's **ingress filtering** may also drop packets whose source is not in its prefix, and the address may **conflict** with the real owner.
+- **Three ways to keep one public IP wherever you are (3):** (1) **let routing handle it** with per-host route advertisements, (2) **indirect routing through a home agent** (Mobile IP), (3) **direct routing**, where the correspondent obtains the COA.
+- **Not scalable (2):** **routing-based**. Every router carries an entry per mobile and updates on every move, which breaks aggregation. The scored script took this mobility reading and gave Mobile IP plus the routing-table argument. If you are unsure, add one line that NAT is a different problem: it *shares* one address rather than *carrying* one.
+
+### 5.4 Registration (MIP p8)
+
+1. The mobile enters the visited network and contacts the **FA**. The FA advertises itself, and the mobile solicits it.
+2. The FA contacts the **HA**: "this mobile is resident in my network," giving the COA.
+
+The end result is that the **FA knows about the mobile, and the HA knows the mobile's location**. The real protocol (RFC 5944; K8e §7.6.2 pp.592–594) has three parts: agent advertisement, registration request/reply, and a registration lifetime. **His annotation:** the home and visited networks need an agreement, a business relationship, for the FA to serve the mobile.
+
+### 5.5 Indirect routing and triangle routing (MIP p9–11)
+
+```mermaid
+flowchart LR
+  C[Correspondent] -->|1. to permanent addr| HA[Home agent]
+  HA -->|2. tunnel to COA| FA[Foreign agent]
+  FA -->|3. decapsulate| M[Mobile]
+  M -->|4. reply directly,<br/>src = permanent addr| C
+```
+
+The correspondent addresses packets to the **permanent address**. The **HA intercepts** them and **tunnels** each one to the COA: a packet within a packet, with outer dst 79.129.13.2 (COA) and inner dst 128.119.40.186 (permanent address) (K7 slide 7-62). The **FA decapsulates** and delivers. The mobile **replies directly** to the correspondent, using its permanent address as the source.
+
+**Comments (MIP p10):**
+
+- The mobile uses two addresses. The permanent address is used by the correspondent, so the mobile's location is **transparent** to it. The COA is used only by the HA.
+- The FA's functions can be done by the mobile itself, using a co-located COA.
+- **Triangle routing** (correspondent → home network → mobile) is inefficient. It is worst when the correspondent and the mobile are in the **same** visited network, because every packet crosses the WAN twice.
+
+**Moving between networks (MIP p11).** The mobile registers with the new FA, the new FA registers with the HA, and the HA updates the COA. Packets keep being forwarded, now to the new COA. **Ongoing connections are maintained, and the move is transparent to the correspondent.**
+
+**His answer (class notes):** the reply carries the **home** address as source "to maintain privacy". Otherwise the correspondent would think the reply came from a different network. Packets already tunnelled to the old FA when the mobile moves are **dropped**. The 23-24 notes contrast this: indirect drops in-flight packets, while direct routing with an anchor forwards them to the next FA. **Condition to state:** the visited network's **ingress filtering** may drop the mobile's replies, because their source is the home address. The fix, reverse tunnelling back through the HA, brings the triangle back.
+
+### 5.6 Direct routing and the anchor FA (MIP p12–14)
+
+In direct routing, the correspondent (via a correspondent agent) **asks the HA for the COA**, then sends straight to the FA, which delivers. The mobile replies directly (MIP p12). The slide's comments (p13):
+
+- It **overcomes triangle routing**.
+- It is **non-transparent** to the correspondent, which must get the COA from the HA.
+- The open problem: **what if the mobile changes visited network?** The correspondent's COA is now stale.
+
+**Anchor foreign agent (MIP p14):** the FA in the first visited network is the anchor. Data is always routed first to the anchor. When the mobile moves, the new FA arranges for the old FA to **forward** data to it (**chaining**). **His annotation:** "FAs are assumed to be nearby, which makes chaining actually efficient."
+
+★ **Exam (M23 Q3, 6 marks):** "What are the pros and cons of direct routing in mobile networks?" This follows his answer key in the class notes and the scored script.
+
+| Pros | Cons |
+| --- | --- |
+| **Removes triangle routing**: a shorter path and lower delay | **Not transparent**: the correspondent must query the HA and learns the COA, so the mobile's location is exposed (a privacy issue) and correspondent software must change |
+| **Less load on the home network and HA**: the HA is consulted once, not for every packet | **Handoff is hard**: a move makes the correspondent's COA stale, so you need the **anchor FA** |
+| With an anchor FA, **in-flight packets are forwarded, not dropped**, during a handoff | **Chains of FAs** add delay and hops the longer the mobile keeps moving, and the anchor is a single point of failure |
+|  | Still **depends on the HA** at session start to get the location |
+
+**Conditions:** the HA is reachable when the session starts, and the FAs are cooperative and close to each other.
+
+### 5.7 His deck vs K8e
+
+**His answer:** the MIP deck is Kurose 6e's FA/COA model. Write answers in that vocabulary. K8e rewrites mobility around 4G/5G: the home network's HSS, a visited network, tunnels via the P-GW, and handover anchored at the S-GW (§7.5, §7.6.1). It keeps Mobile IP only as a short §7.6.2. The ideas match: the anchor FA is the ancestor of the anchor MSC in GSM and the S-GW anchor in LTE. Use K8e for depth, not for terminology.
+
+### 5.8 Scenario questions in his style
+
+**Q1.** "I'm on a video call walking from the library WiFi to my hostel's network, which is a different subnet. (a) Why does the call drop? (2) (b) What would keep it alive, and how? (4)"
+
+- (a) The hostel network gives me a **new IP via DHCP**. The call's connection is bound to the old IP (the **4-tuple**), so the correspondent's packets still go to the library subnet and the session times out.
+- (b) **Mobile IP.** I keep a **permanent address** in my home network. In the hostel I get a **COA** and **register** with the FA, which informs my **HA**. The HA **intercepts and tunnels** the correspondent's packets to the COA, and the FA decapsulates. My connection still uses the permanent address, so it survives. **Conditions:** the HA is reachable, both networks run agents that cooperate, and the hostel does not drop my replies through **ingress filtering**.
+
+**Q2.** "My correspondent sits in the same visited network as my mobile, yet every packet between them goes to the home network in another city and back. (a) Why? (2) (b) Fix it, and state the cost. (3)"
+
+- (a) **Indirect routing.** The correspondent only knows the permanent address, so packets reach the HA, which tunnels them back to the COA: **triangle routing**.
+- (b) **Direct routing.** The correspondent gets the **COA from the HA** and sends to the FA directly. The cost is that it is **not transparent**: the correspondent must be modified and learns the mobile's location. If the mobile moves, you need an **anchor FA** and chaining. **Conditions:** the correspondent supports it, and the HA answers location queries.
+
+**Q3.** "My mobile moves from FA1 to FA2 in the middle of a download. What happens to packets in flight under (a) indirect routing? (2) (b) direct routing with an anchor FA? (2)"
+
+- (a) Packets already tunnelled to **FA1 are lost** until the mobile **re-registers** and the HA updates the COA to FA2. TCP retransmits them. Later packets go to FA2.
+- (b) FA1 is the anchor, or is chained to it, and **forwards** them to FA2. **Nothing is dropped**, at the cost of a longer path. **Conditions:** FA1 and FA2 cooperate and are close together.
+
+**Interview link:** the home agent is a stable indirection point in front of a moving endpoint, the same idea as a DNS name, a virtual IP, a service registry, or Raft followers redirecting clients to the current leader. Its tunnel is the same encapsulation trick as GRE and VXLAN overlays (Ch 8).
+
+**Read:** the MIP deck p1–14 (Kurose 6e slides 6-34 to 6-47); the 9 Sep 2023 class notes. K8e §7.5 pp.578–587 (triangle routing p.585, direct-routing challenges p.586); §7.6.2 pp.592–594. P&D §4.4 pp.369–379 (Mobile IP pp.372–379). Tan §5.2.10 pp.386–389; §5.6.9 pp.485–488. RFC 5944 §1 for the real message names.
+
+**Notion check:** the senior's notes only link to external chats for this block, so there is nothing to corroborate. Rely on the deck and the class notes.
+
+## Chapter 6 — Wireless PHY I: the channel, SNR and capacity (PHY2)
+
+His favourite PHY question is one causal chain: **faster data → shorter symbols → wider bandwidth → the band is capped and echoes overlap → errors**. This chapter builds the first half of that chain: what the air does to a signal, how SNR is measured, and why bandwidth and Shannon bound the rate. Ch 7 finishes it with ISI and OFDM. PHY has appeared in 2 of 3 midsems and in every compre.
+
+### 6.1 Choosing the spectrum (PHY2 p2–4)
+
+Wireless means electromagnetic waves, and the only real choice you make is the **frequency**. Wavelength is λ = c/f, so 2.4 GHz gives λ ≈ 12.5 cm and 100 MHz (FM) gives 3 m.
+
+| Band | Frequency | Wavelength | Used by |
+| --- | --- | --- | --- |
+| LF / MF / HF | 30 Hz – 30 MHz | km to m | AM radio, submarines |
+| VHF | 30–300 MHz | metres | Analog TV, FM |
+| UHF | 300 MHz – 3 GHz | tens of cm | Digital TV, cellular, 2.4 GHz WiFi |
+| SHF | 3–30 GHz | cm | 5 GHz WiFi, satellites |
+
+Three forces decide the band (p3):
+
+1. **Antenna size** is of the order of the wavelength, so low frequencies need huge antennas.
+2. **Sharing among users.** Two users on the same frequency interfere, so bands are **regulated**. You get a fixed slice, such as a 20 MHz WiFi channel. This comes back as a hard limit on rate.
+3. **Propagation.** Low frequencies travel far (LF/MF/HF bounce off the ionosphere). High frequencies need **line of sight**.
+
+2.4 GHz (the unlicensed ISM band) balances antenna size against propagation. **His additions (class notes):** the band must not already be taken by another user (the government or ISRO, say), and higher frequencies need line of sight.
+
+Antennas (p4), know the words only: **isotropic** (ideal reference), **dipole** (omnidirectional in one plane, figure-8 in the others), **directional**, **sectorised** (three 120° sectors on a tower), and **smart arrays** that steer the beam (the idea behind beamforming).
+
+### 6.2 Analog vs digital modulation (PHY2 p5–7)
+
+A **carrier** is a pure sinusoid at frequency f, and it carries nothing until you modulate it.
+
+- **Analog (AM radio, p5):** the carrier's amplitude follows the data waveform exactly. Any distortion changes the amplitude, and the receiver cannot tell noise from data. It is **error-prone**.
+- **Digital (p6–7):** you sample the signal, quantise it to a few levels (4 levels = 2 bits), and use the bits to modulate the carrier. The simplest version is **ASK**: send the carrier for 1 and nothing for 0.
+
+**Why digital wins:** the receiver only has to decide "closer to 0 or to 1?", so moderate distortion does no harm. **His line:** "Digital is not the same as binary; digital simply means quantised."
+
+### 6.3 What the air does to a signal (PHY2 p8–10)
+
+The receiver gets **many copies** of what you sent:
+
+- **Multipath:** the signal arrives directly and also by bouncing off walls, floors and cars. Each path has a different length, so each copy has a different **delay** and **strength**.
+- **Attenuation of each copy:** **path loss** (free space falls as 1/d², the inverse-square law, and faster indoors), plus reflection, diffraction, scattering and shadowing.
+- **Doppler shift:** motion shifts each copy's frequency in proportion to speed.
+- **Thermal noise** added on top.
+
+**The channel as a formula (p9):**
+
+```latex
+y = h * x + n
+```
+
+Here h is the **channel impulse response**: send one spike and you receive a train of smaller, later spikes, one per path. The \* is convolution, so every received sample mixes the current symbol with echoes of earlier ones. **Channel equalisation** means the receiver estimates h, usually from a known preamble at the start of the packet, and undoes it.
+
+**Two timescales of fading (p10).** **Path loss** is the long-timescale fall of the average as you walk away from the AP. **Multipath fading** is short-timescale: move about half a wavelength (6 cm at 2.4 GHz) and the copies go from adding up (constructive) to cancelling out (destructive).
+
+★ **Exam (C25 Q2, 6 marks):** "For long-range communication, as we increase the number of surfaces between transmitter and receiver, why does the data loss increase?" Each link of this chain is a mark:
+
+1. **Every surface reflects, diffracts or scatters the signal**, creating **more copies** with different delays.
+2. So the **delay spread** grows.
+3. Once the **symbol duration is shorter than the delay spread**, echoes of one symbol land on the next: **ISI** (Ch 7).
+4. **Each bounce also attenuates** the copy. Over a long range, path loss is added on top, so the **SNR falls** towards the decoding threshold.
+5. A large delay spread also means a small **coherence bandwidth** (≈ 1/delay spread), so the channel becomes **frequency-selective** and some frequencies fade deeply.
+
+**Conditions:** a fixed symbol rate and transmit power, with no OFDM or equaliser to absorb the spread. The scored script named distance, falling SNR and "channel response delay" but never tied them into this chain, and got 2 of 6.
+
+### 6.4 SNR and decibels (PHY2 p11–12)
+
+After the channel, 1s are distorted and 0s are not exactly zero. You can still decide correctly **if the signal is much stronger than the noise**.
+
+```latex
+\mathrm{SNR} = \frac{P_s}{P_n}, \qquad \mathrm{SNR_{dB}} = 10 \log_{10}\frac{P_s}{P_n}
+```
+
+| Ratio | 1 | 2 | 10 | 100 | 1000 | 10⁶ |
+| --- | --- | --- | --- | --- | --- | --- |
+| dB | 0 | ≈ 3 | 10 | 20 | 30 | 60 |
+
+Every +10 dB multiplies the ratio by 10, and every +3 dB doubles it. **Losses in dB subtract**: transmit at 50 dB with 30 dB of path loss and you receive 20 dB. **dBm** is relative to 1 mW, so 1000 mW = 30 dBm. A received −60 dBm over a −90 dBm noise floor gives SNR = 30 dB. Every scheme has a **minimum SNR** below which it cannot decode.
+
+**His lines (class notes):** "If SNR = 1 it's the worst scenario: noise equals signal." "SNR should be as great as possible."
+
+### 6.5 How fast can you send? Bandwidth (PHY2 p13–17)
+
+A **symbol** is one chunk of waveform, and the symbol rate is 1/T. Shorter symbols give a higher rate. The limit is easiest to see in the **frequency domain** (p14–15). The DFT writes N samples as a weighted sum of N sinusoids, and the two views are equivalent. Baseband data is a hump centred at 0 Hz, the carrier is one spike at f, and the transmitted signal is the data's hump **shifted up to f**.
+
+**The key fact (p16): bandwidth ∝ 1 / symbol duration.** Sharp, fast pulses need high-frequency components, so their hump is wider. A 1 µs symbol needs about 1 MHz, and a 50 ns symbol about 20 MHz.
+
+**Two hard limits on bandwidth (p17):**
+
+1. **Your allocated band.** 802.11g gets 20 MHz. Send faster and your hump spills into the **neighbour's channel**: interference, and data loss for both.
+2. **Hardware sampling.** **Nyquist**: a baseband signal whose highest frequency is f must be sampled at **≥ 2f**. Wider bands need faster, costlier ADCs and DACs.
+
+**His board sketch (class notes):** a 5 GHz carrier pushed faster spreads out towards 6 GHz and 4 GHz, "interferes with other frequencies and causes data loss" — "that's why we cannot pack infinite data". Also: "increasing energy won't affect frequency ranges", so more power does not buy you bandwidth.
+
+★ **Exam (M23 Q4, 6 marks):** "If the receiver node cannot listen beyond 10 MHz of bandwidth, why cannot I keep increasing the data rate?"
+
+1. A higher rate needs **shorter symbols**.
+2. **Bandwidth ∝ 1/T**, so the spectrum **widens**.
+3. Beyond 10 MHz, the receiver **filters out** the energy outside its band. The received pulse is truncated and distorted, which **smears symbols into each other**, and the spill also **interferes with neighbouring channels**.
+4. **Nyquist** needs sampling at ≥ 2f, which the hardware cannot do.
+5. **Shannon** fixes the ceiling at C = 10 MHz × log₂(1 + SNR), which only more SNR can raise, and only logarithmically.
+
+**Conditions:** the receiver's filter is fixed at 10 MHz, and the symbol shape is fixed (no denser modulation).
+
+★ **Exam (M24 Q4, 2 + 2 + 2):** "As a transmitter starts sending data at a higher rate, what effect does it have in the frequency domain? Does the impact of noise on data change if the transmitter sends data at a higher rate? If yes, under what condition?"
+
+- **(a)** Shorter symbols **widen the occupied band** (the "bell curve" in the frequency domain spreads out) and eventually **spill into neighbouring channels**.
+- **(b)** **Yes.** At the same power, a shorter symbol carries **less energy per symbol**. His way of putting it: a slower rate is "more resilient to noise" because each bit is effectively repeated for longer. The same noise flips more symbols.
+- **(c)** It gets worse **when the symbol duration drops below the multipath delay spread**. Echoes then add **ISI** on top of the noise. It also gets worse when the widened band exceeds the allocated or receiver band. The scored script gave the delay-spread condition and received "Excellent".
+
+### 6.6 Shannon capacity (PHY2 p18–19)
+
+Ethernet quotes a fixed 100 Mbps. For wireless, two things set the rate: **bandwidth** (symbols per second) and **SNR** (how many levels per symbol you can tell apart through the noise).
+
+```latex
+C = B \log_2\!\left(1 + \frac{P_s}{P_n}\right)
+```
+
+B is in Hz, and **S/N is a ratio, not dB**, so convert first. The slide's example: B = 20 MHz and 30 dB, so the ratio is 1000, log₂ 1001 ≈ 10, and C ≈ **200 Mbps**. **Slide erratum:** the slide writes "SNR = 20 dB, so Ps/Pn = 1000", but 1000 is 30 dB. C is an **upper bound**: R > C guarantees errors, and R < C is possible but not automatic. Good modulation and coding are needed to get close (Ch 7).
+
+- **Double the power** (1000 → 2000, +3 dB): 20M × log₂ 2001 ≈ 220 Mbps, only about +10%. Capacity is **logarithmic in SNR**.
+- **Double the bandwidth** (20 → 40 MHz): noise power doubles too, so SNR drops to 500, and 40M × log₂ 501 ≈ 360 Mbps, about 1.8×. Capacity is **nearly linear in B**, which is why WiFi keeps widening its channels.
+- **SNR 0 dB** (ratio 1): C = B, so 1 bit/s/Hz.
+
+### 6.7 Scenario questions in his style
+
+**Q1.** "I doubled my AP's transmit power. (a) Did my throughput double? (3) (b) What would roughly double it? (2)"
+
+- (a) No. Doubling power is **+3 dB of SNR**, and **C = B log₂(1+SNR)** is logarithmic, so at 30 dB the gain is about +10%. It may let **adaptive modulation** step up one level if you were near a threshold (Ch 7). It also raises **interference** for neighbours and hits **regulatory power limits**.
+- (b) **Doubling the bandwidth** gives about 1.8×, because noise grows with B. **Conditions:** the high-SNR regime. At low SNR, power gains are closer to linear.
+
+**Q2.** "My laptop's signal is perfect at 2 m from the AP, but at 20 m it keeps dropping in and out as I move my chair. Why? (3)"
+
+**Path loss** (long timescale) has lowered the **average** received power close to the decoding threshold. **Multipath fading** (short timescale) then causes rapid **constructive/destructive** dips about every half wavelength (about 6 cm), which intermittently push the **SNR below the minimum**. At 2 m, the average is far enough above the threshold that the dips don't matter. **Conditions:** indoor multipath, with the same transmit power and modulation.
+
+**Q3.** "A vendor promises 100 Mbps on my 10 MHz channel at 20 dB SNR. (a) Possible? (2) (b) What would have to change? (2)"
+
+- (a) No. 20 dB means a ratio of 100, so C = 10M × log₂ 101 ≈ 10M × 6.66 ≈ **66.6 Mbps < 100 Mbps**. **Shannon** is an upper bound, and R > C guarantees errors.
+- (b) Either **more bandwidth** (about 16 MHz or more at the same SNR) or **higher SNR**: log₂(1+SNR) ≥ 10 needs a ratio of about 1023, so **about 30 dB**. **Conditions:** Shannon assumes Gaussian noise and ideal coding. Real schemes fall short of C.
+
+**Read:** PHY2 p1–20; K7 p13–22 and p25–26 as a second view. K8e §7.2 pp.536–539. Tan §2.1 pp.90–95 (Fourier, bandwidth-limited signals, Nyquist and Shannon p.94); §2.3 pp.105–110. P&D pp.74–75 (Shannon–Hartley). Project doc `claude/g525-phy-reading-material.md`, Part 1, for more worked numbers.
+
+**Notion check:** "do inverse FFT to get back to frequency domain" is backwards. The FFT goes time → frequency, and the IFFT goes **frequency → time**.
+
+## Chapter 7 — Wireless PHY II: modulation, ISI, OFDM and coherence (PHY3)
+
+This chapter finishes his PHY chain. When symbols become shorter than the echo spread you get **ISI**. The fix is to send many *slow* subcarriers in parallel (**OFDM**), each one narrow enough that the channel looks flat across it. The two "coherence" quantities tell you when that is needed: coherence bandwidth over frequency, and coherence time over time. OFDM and coherence were asked in M23 Q5, C23 Q4, C24 Q8 and C25 Q3. Pure ASK/PSK/QAM has not been examined (0/3), but it was taught at length.
+
+### 7.1 What you can modulate (PHY3 p2)
+
+```latex
+s(t) = A\cos(2\pi f t + \phi)
+```
+
+The three knobs are **amplitude A** (ASK), **frequency f** (FSK) and **phase φ** (PSK). QAM uses A and φ together. With M distinct symbols, each symbol carries **log₂ M bits**, so bit rate = symbol rate × log₂ M.
+
+### 7.2 ASK and constellation diagrams (PHY3 p3–4)
+
+The variants are **2-ASK** with amplitudes 0/1 or −1/+1 (−1 is the carrier inverted), and **4-ASK** with −1, −0.5, +0.5 and +1, giving 2 bits per symbol. A **constellation diagram** draws each symbol as one dot, in place of its waveform.
+
+**The one visual idea to keep:** noise makes the received point land *near* the transmitted dot, and the receiver picks the **nearest dot**. **The further apart the dots, the more noise you can tolerate.** The ±1 pair (2 apart) is more robust than 0/1 (1 apart) at the same peak power. 4-ASK packs dots 0.5 apart, so it gets more bits per symbol but needs more SNR. This single idea explains ASK → PSK → QAM and adaptive modulation.
+
+### 7.3 FSK (PHY3 p5)
+
+FSK uses a different frequency for each symbol. It is **rarely used because it consumes more bandwidth**: you occupy spectrum around two or more frequencies instead of one, and bandwidth is the scarce resource (Ch 6.5). **His addition (Notion):** every extra frequency must be licensed, so FSK is costly.
+
+### 7.4 PSK (PHY3 p6–7)
+
+- **BPSK:** phases 0 and π. A shift of π is the carrier inverted, so **BPSK is the same as ±1 ASK**. 1 bit per symbol.
+- **QPSK:** 4 phases, 2 bits per symbol. It doubles BPSK's rate in the same bandwidth.
+- **Gray coding:** neighbouring dots differ in **one bit**. The most likely error is mistaking a dot for its nearest neighbour, which then costs 1 bit instead of 2.
+- **8-PSK is inefficient.** All 8 dots sit on one circle, so they are close together. QAM spreads the same number of points over the whole plane.
+- **The phase-lock problem:** reading an *absolute* phase needs the receiver's oscillator locked to the transmitter's, which is hard for a moving or cheap device. **DQPSK** encodes bits in the **phase change** between consecutive symbols, so **no phase lock is needed**. The cost is that one bad symbol spoils two decisions.
+
+### 7.5 QAM and adaptive modulation (PHY3 p8)
+
+QAM puts dots on a grid by varying **amplitude and phase together**. 16-QAM gives 4 bits per symbol and 64-QAM gives 6. At the same peak power, a **denser constellation puts dots closer together, so it needs a higher SNR**.
+
+| Scheme | Bits/symbol | SNR needed |
+| --- | --- | --- |
+| BPSK | 1 | Lowest |
+| QPSK | 2 | Low |
+| 16-QAM | 4 | Medium |
+| 64-QAM | 6 | High |
+
+**Adaptive modulation (K7 p48; K8e pp.537–538).** The radio measures SNR and uses the densest scheme it can still decode. Near the AP it uses 64-QAM, and as you walk away it steps down to 16-QAM, then QPSK, then BPSK. K8e's Fig 7.3 shows the trade-off: at 10 dB SNR, BPSK at 1 Mbps has a BER below 10⁻⁷, while 16-QAM at 4 Mbps has a far higher BER. So your WiFi speed drops as you move away even though you stay connected.
+
+**Worked example (not on his slides):** 802.11g at 54 Mbps uses 48 data subcarriers × 6 bits (64-QAM) × 3/4 code rate = 216 bits per 4 µs OFDM symbol, which is 54 Mbps. At low SNR it falls back to BPSK at rate 1/2: 48 × 1 × 1/2 / 4 µs = 6 Mbps.
+
+### 7.6 The single-carrier problem: ISI (PHY3 p9)
+
+Everything so far uses **one carrier across the whole band**. The echoes of each symbol are spread over the **delay spread**: the time between the first and last significant copy, typically tens to hundreds of ns indoors.
+
+- **Symbol duration > delay spread:** a symbol's echoes arrive while that symbol is still "on", so the channel is one simple scaling. It is **easy to estimate h and undo it.**
+- **Symbol duration < delay spread:** echoes of earlier symbols land in the current one. That is **inter-symbol interference (ISI)**. Undoing it needs a **multi-tap equaliser** that subtracts the echoes of every earlier symbol. More ISI means more taps, more computation and more power.
+
+**The dilemma:** a high rate needs short symbols, which cause ISI, which needs a complex receiver. That is bad for small battery-powered devices. For scale: 20 MHz on a single carrier gives about 50 ns symbols, and an indoor delay spread of 100–200 ns covers 2–4 symbols. **His analogy (Notion):** in a small room there is no echo, but in a big hall you must speak slowly, or the echo of your last word lands on the next one.
+
+★ **Exam (C23 Q4, 2 + 1):** "If symbol duration is less than delay spread, what will happen? How does it affect the data reception?" (a) **ISI**: delayed copies of one symbol overlap the next ones. (b) The receiver **cannot distinguish adjacent symbols**, so the bit-error rate rises unless it runs a costly **multi-tap equaliser**.
+
+### 7.7 Multicarrier modulation and OFDM (PHY3 p10–12)
+
+**The idea:** split the bit stream into **N parallel slow streams**, each on its own **subcarrier** inside your band. Each stream is N times slower, so its symbols are N times longer, which makes them **longer than the delay spread**, and ISI disappears. The total rate is unchanged: N streams at rate/N each. **His point:** each stream is slow, yet the aggregate throughput is not lost.
+
+**Why the subcarriers don't interfere:** they are **orthogonal**. The spacing is chosen so that **at the peak of each subcarrier's spectrum, every other subcarrier's spectrum is zero** (the p10 picture). They overlap in frequency, but no spectrum is wasted on guard gaps.
+
+**OFDM in WiFi (p11):** **64 subcarriers** in 20 MHz, each 312.5 kHz wide (48 carry data, 4 are pilots, the rest are guards). An OFDM symbol is about 3.2 µs plus a 0.8 µs guard, far longer than the delay spread. The receiver needs only **single-tap equalisation**: one multiply per subcarrier.
+
+**No, you don't need 64 oscillators (p12).** Taking N constellation points (amplitude and phase), weighting N sinusoids by them and summing them is **exactly the inverse DFT**. So the transmitter does an **IFFT**, and the receiver does an **FFT**. Both are cheap O(N log N) hardware, which is what makes OFDM practical. **His answer (Notion):** one antenna sends the single summed waveform. WiFi's multiple antennas are for serving several users and MIMO, not one antenna per subcarrier.
+
+```mermaid
+flowchart LR
+  A[bits] --> B[split into<br/>N streams]
+  B --> C[map each to<br/>QAM point]
+  C --> D[IFFT]
+  D --> E[carrier + air]
+  E --> F[FFT]
+  F --> G[divide by H k<br/>per subcarrier]
+  G --> H[nearest dot<br/>to bits]
+```
+
+The guard interval is a **cyclic prefix**, a copy of the symbol's tail placed in front of it. It absorbs the echoes of the previous OFDM symbol. This is not on his slides, but it is correct background.
+
+★ **Exam (M23 Q5, 8 marks):** "How will a transmitter transmit data if the bandwidth is larger than the coherence bandwidth?" **His answer key (class notes), step by step:**
+
+1. **Divide the band** into subcarriers, each **no wider than the coherence bandwidth**.
+2. **Divide the data** into as many parallel streams.
+3. **Modulate** each stream onto its subcarrier (map its bits to constellation points).
+4. **Combine them with an IFFT** into one time-domain signal, put it on the carrier and transmit.
+
+Add the **why**: each subcarrier is narrower than B\_c, so it sees a **flat** channel. Each stream is slow, so its symbol is longer than the delay spread and there is **no ISI**. The receiver does an **FFT and single-tap equalisation** per subcarrier. **Conditions:** subcarrier bandwidth < coherence bandwidth, and the subcarriers stay orthogonal, which rules out large Doppler shifts.
+
+★ **Exam (C25 Q3, 6 marks):** "If a transmitter uses multiple subcarriers to send data at a slower rate than using a single carrier with a faster data rate, why does the data loss reduce?"
+
+1. On a single fast carrier, **symbols are short**, shorter than the **delay spread**, so you get **ISI** and errors.
+2. With multiple slow subcarriers, each symbol is **longer than the delay spread**, so there is **no ISI**.
+3. Each subcarrier is **narrower than the coherence bandwidth**, so its channel is **flat**. The receiver can **estimate and invert it with a single tap**, while a single wide carrier would see frequency-selective fading.
+4. A deep fade hits only a few subcarriers, not the whole signal.
+5. The **aggregate rate is unchanged**: N × rate/N.
+
+The scored script said "symbols close to each other in constellation" and got partial credit. Name ISI and delay spread.
+
+### 7.8 The frequency-domain view: coherence bandwidth (PHY3 p13–14)
+
+The **channel frequency response H** is the DFT of h. It says how much each frequency in your band is attenuated.
+
+- **Small delay spread** (h is one or two close spikes): H is almost **flat** across the band, so one number describes the channel.
+- **Large delay spread** (h is many spread-out spikes): H **varies across the band**, so the channel is **frequency-selective**. Some frequencies are strong and some sit in deep fades. This is the same time–frequency duality as before: spread out in time means wiggly in frequency.
+
+```latex
+B_c \approx \frac{1}{\text{delay spread}}
+```
+
+If **B\_c < channel width**, the channel is frequency-selective. If B\_c is larger, the whole band fades together (**flat fading**). WiFi example: a 200 ns delay spread gives B\_c ≈ 5 MHz, which is below the 20 MHz channel, so the channel is frequency-selective. Each OFDM subcarrier is 312.5 kHz, far below 5 MHz, so it is flat. **"Hence OFDM is the preferred choice"** (p14). **His annotation:** coherence bandwidth "decides the size of the band" you can treat as one flat piece.
+
+### 7.9 Coherence time: slow and fast fading (PHY3 p15)
+
+Motion causes **Doppler** shifts. Different paths shift differently, so the received signal is **spread in frequency**, and by duality **h changes over time**.
+
+```latex
+T_c \approx \frac{1}{\text{Doppler spread}}
+```
+
+**Coherence time** is how long h stays roughly the same. Faster motion means a shorter coherence time.
+
+|  | Condition | Meaning | Example |
+| --- | --- | --- | --- |
+| **Slow fading** | T\_c > packet duration | h is constant for the whole packet, often several packets | Indoor, walking |
+| **Fast fading** | T\_c < packet duration | h **changes in the middle of a packet** | Outdoor, in a vehicle |
+
+**Why fast fading hurts:** the receiver estimates h from the preamble at the **start** of the packet. If h changes mid-packet, that estimate is **stale** by the end, equalisation goes wrong, and the tail of the packet has errors. Fixes: shorter packets (more overhead), **pilot** subcarriers that track h during the packet (WiFi has 4), or more robust modulation (a lower rate). For scale at 2.4 GHz: walking at 1.5 m/s gives f\_D ≈ 12 Hz and T\_c of tens of ms, far longer than a 1 ms packet. A car at 30 m/s gives f\_D ≈ 240 Hz and T\_c of a few ms, which is comparable to a long packet.
+
+★ **Exam (C24 Q8, 4 marks):** "What happens if the packet duration is smaller than the coherence time?" The channel h is **constant for the whole packet** (**slow fading**). The **estimate from the preamble stays valid** to the last symbol, **equalisation is correct**, and the packet is recovered cleanly. You need only one channel estimate per packet, and often one serves several packets. **Conditions:** little motion, i.e. a small Doppler spread, and a packet short relative to T\_c. The scored script said "channel is good, signal recovery is better" and got 4 of 4.
+
+|  | Caused by | Formula | Compare with | If smaller |
+| --- | --- | --- | --- | --- |
+| **Coherence bandwidth** | Multipath **delay spread** | B\_c ≈ 1/delay spread | Channel bandwidth | Frequency-selective, so use OFDM |
+| **Coherence time** | **Doppler** spread (motion) | T\_c ≈ 1/Doppler spread | Packet duration | Fast fading: h changes mid-packet |
+
+### 7.10 Scenario questions in his style
+
+**Q1 (his signature question).** "Why can't I just keep increasing the data rate on my WiFi link? (6)"
+
+1. A higher rate needs **shorter symbols**.
+2. **Bandwidth ∝ 1/T**, so the signal **spills out of the regulated 20 MHz channel** into the **neighbours'**, and **Nyquist** needs faster sampling hardware.
+3. **Shannon** bounds the rate by B and SNR, and SNR gains are only logarithmic.
+4. Once the **symbol is shorter than the delay spread**, you get **ISI**, which needs a complex **multi-tap equaliser**.
+5. **The fix is OFDM**: 64 slow orthogonal subcarriers, no ISI, single-tap equalisation, and cheap **IFFT/FFT**. Use **denser QAM** only where SNR allows (**adaptive modulation**).
+
+**Conditions:** a fixed regulated channel width, indoor delay spread in the hundreds of ns, and subcarrier bandwidth below the coherence bandwidth.
+
+**Q2.** "My laptop's WiFi speed falls from 300 to 50 Mbps as I carry it from the lab to the corridor, but it never disconnects. Why? (3)"
+
+**Path loss** lowers **SNR**, so **adaptive modulation** steps down from 64-QAM (6 bits) to 16-QAM to QPSK, because denser constellations need higher SNR to keep the bit-error rate low. The link holds as long as SNR stays above BPSK's threshold. **Conditions:** same channel width, and no interference change.
+
+**Q3.** "My video call glitches in a moving car but is fine in the lecture hall. (a) Why? (3) (b) What helps, and at what cost? (2)"
+
+- (a) Speed causes **Doppler**, which shortens the **coherence time**. In the car, T\_c < packet duration, so you get **fast fading**: h changes **mid-packet**, the preamble estimate goes **stale**, and the packet's tail has errors. In the hall there is slow fading.
+- (b) **Shorter packets** (more header overhead), **pilots** that track h (fewer data subcarriers), or **more robust modulation** (a lower rate). **Conditions:** packet duration vs T\_c, which also depends on speed and carrier frequency (higher f gives more Doppler).
+
+**Q4 (short).** Why DQPSK? **No phase lock needed.** Why Gray coding? **A nearest-neighbour error costs 1 bit.** Why is FSK rare? **It wastes bandwidth.** Why is 8-PSK inefficient? **Its dots are crowded on one circle.**
+
+**Read:** PHY3 p1–15; K7 p42–48 (constellations, adaptive modulation) and p52 (OFDM figure). K8e pp.537–538 (BER vs SNR); p.571 (OFDM in LTE). Tan §2.5.2 pp.130–132 (ASK/FSK/PSK, QPSK/QAM figures p.132, Gray-coded QAM-16 p.133); §2.5.3 pp.132–133 (OFDM); §4.4.2 pp.301–303 (802.11 PHY). P&D p.135 (OFDM in 802.11a). Project doc `claude/g525-phy-reading-material.md`, Part 2.
+
+**Notion check:**
+
+- "FSK works better in noisy environments" is from a toy analogy. The lecture point is that **FSK wastes bandwidth**, which is why it is rarely used.
+- "Coherence time… means we don't get inter-symbol interference" is wrong. ISI is about **symbol duration vs delay spread**. Coherence time is about **packet duration vs Doppler**.
+- "Orthogonal → 90°" is loose. Orthogonal subcarriers are spaced so each one's spectrum is **zero at the others' peaks**.
+
+**Class-notes check:** the 23-24 notes write "coherence time = 1/coherence bandwidth". Each comes from a different spread: coherence time ≈ 1/Doppler spread, and coherence bandwidth ≈ 1/delay spread.
+
+## Chapter 8 — VLAN and VXLAN (K6 p73–80)
+
+A VLAN cuts one physical switched network into several **broadcast domains**, using a decision made per switch port at layer 2. That decision has nothing to do with IP addresses. VXLAN stretches a layer-2 segment across a layer-3 network by tunnelling frames inside UDP. He asked about VLANs in M24 Q1 and C25 Q6, and he examined network-virtualisation tunnels in C23 Q7.
+
+**Status:** VLAN is on his K6 topic list and comes next in his lecture order. Confirm it has actually been lectured before 5 Oct. In 24-25 the midsem cut fell right after this module.
+
+### 8.1 Why one big LAN hurts (K6 p73–74)
+
+One switched LAN is **one broadcast domain**, which causes two kinds of problem:
+
+- **Scaling.** Every L2 broadcast (ARP, DHCP, frames to not-yet-learned MACs) crosses the entire LAN. That costs efficiency, security and privacy, because everyone sees everyone's broadcasts.
+- **Administration.** A CS user moves into an office in the EE building. Physically they are attached to the EE switch, but logically they should stay on the CS network.
+
+**His line (class notes):** you *could* physically move hosts or rewire, "but this is an inelegant solution". VLANs let you run multiple LANs over the same network infrastructure.
+
+### 8.2 Port-based VLANs (K6 p75–76)
+
+Switch-management software **groups the ports**. For example, ports 1–8 become the EE VLAN and ports 9–15 the CS VLAN, so a single physical switch "operates as **multiple virtual switches**".
+
+- **Traffic isolation.** Frames to or from ports 1–8 can only reach ports 1–8. That includes broadcasts, so each VLAN is its own broadcast domain.
+- **Membership** can also be defined by the endpoint's **MAC address** instead of the port.
+- **Dynamic membership.** Ports can be reassigned between VLANs in software, with no rewiring.
+- **Forwarding between VLANs is done by routing**, exactly as if the VLANs were separate switches. In practice, vendors sell switches with a built-in router (L3 switches).
+
+By convention, each VLAN gets its own IP subnet, and the router has one interface (or sub-interface) per VLAN as each VLAN's gateway. **His lines (class notes):** "one switch can have 2 VLANs" and "we reconfigure the switch to use only the top or bottom ports as a VLAN".
+
+### 8.3 Trunks and the 802.1Q tag (K6 p77–78)
+
+When one VLAN spans several switches, a **trunk port** on each switch carries frames of **all** VLANs between them. A frame on the trunk cannot be a plain Ethernet frame, because the far switch must know which VLAN it belongs to. **802.1Q** adds the header fields at the trunk and removes them at the far end.
+
+| Preamble | Dest MAC | Src MAC | **TPID 0x8100** (2 B) | **TCI** (2 B) | Type | Data | CRC (recomputed) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+
+**The TCI** holds a 3-bit priority field (like IP ToS), 1 flag bit, and a **12-bit VLAN ID**. So there are at most 4094 usable VLANs, since 0 and 4095 are reserved. The CRC is **recomputed**, because the frame has changed.
+
+Ports come in two kinds (Notion). An **access port** (untagged) belongs to one VLAN and sends plain frames to the host, which never sees a tag. A **trunk port** (tagged) carries many VLANs with tags.
+
+**His line:** "VLANs are Ethernet bits plus additional bits. Bits are expensive, so VLANs might prove costly." Every trunked frame carries 4 more bytes, which counts against the MTU.
+
+### 8.4 The two exam questions
+
+★ **Exam (M24 Q1, 3 + 3):** "In my department, two people are more privileged, and their data exchange needs to be separated from others in the network. The use of encryption will hide the payload but not the packet headers. How will you keep the payload and header of the privileged people private while still using the same network? How does your solution achieve that objective?"
+
+- **(How, 3):** Put the two privileged users' switch ports into their **own port-based VLAN**, say VLAN 99, on the same physical switches. Where they sit on different switches, carry VLAN 99 over an **802.1Q trunk**. Give VLAN 99 **no route** to the other VLANs, or only an ACL-filtered one.
+- **(Why it works, 3):** The switch delivers VLAN 99 frames, **headers and payload**, only to VLAN 99 ports. Other users' NICs never receive them, so there is nothing to sniff. **Broadcasts** such as their ARP and DHCP stay inside VLAN 99, so even their addresses are hidden. It is **one physical network, logically two**.
+- **Conditions:** managed switches that support 802.1Q; the privileged users are on known, admin-controlled ports; nobody else can be patched into a VLAN 99 port; and the trunk links themselves are trusted. A tag is not encryption, so anyone tapping a trunk sees VLAN 99 frames. The scored script gave VLAN plus trunk and received "Excellent".
+
+★ **Exam (C25 Q6, 4 marks):** "How will a network administrator divide a subnet into two separate networks such that alternate IP addresses (e.g. 192.168.1.2, 192.168.1.4, …) belong to the same network? Mention the condition under which your solution works."
+
+- **Why subnetting cannot do it:** a prefix groups addresses by their **high-order** bits. "Alternate" addresses differ in the **lowest** bit, so no mask can put all the even addresses in one subnet and all the odd ones in another.
+- **The solution:** a **VLAN**. Membership is an L2 decision by **port (or MAC)** and is **independent of the IP address**. Put the ports of the even-addressed hosts in VLAN 10 and the odd ones in VLAN 20. That gives two broadcast domains inside one /24.
+- **Conditions (the part the scored script missed; the grader wrote "Condition?"):**
+  - The switches are **VLAN-capable**, i.e. managed and supporting 802.1Q.
+  - The admin **controls address assignment** (static addresses, or DHCP reservations by MAC), so even addresses stay on even-VLAN ports.
+  - **The two halves do not need to talk to each other.** Both still believe the whole /24 is on-link, so they will ARP for each other directly, and that fails across VLANs. Cross-group traffic would need proxy ARP or renumbering.
+
+### 8.5 VXLAN / EVPN: a LAN across the Internet (K6 p79–80)
+
+The goal is to have two data centres (the slide uses Sunnyvale and Bangalore) share **one layer-2 network**, so that host A and host B believe they are on the same LAN.
+
+**The mechanism.** A **VXLAN Tunnel Endpoint (VTEP)** at each site takes the whole Ethernet frame and wraps it in a **VXLAN header**, which it then carries in **UDP in IP** across the Internet (the layer-3 "underlay"). The far VTEP unwraps it and delivers the original frame. RFC 7348 calls this "a tunnelling scheme to overlay Layer 2 networks on top of Layer 3 networks", a way to "stretch" a Layer 2 network.
+
+| Outer IP (VTEP → VTEP) | UDP (dst 4789) | VXLAN header (24-bit **VNI**) | Original Ethernet frame (A → B) |
+| --- | --- | --- | --- |
+
+**Why not just VLANs?** A VLAN ID is 12 bits (4094 segments), and a VLAN cannot cross a layer-3 network. The VNI is 24 bits, about 16M segments, and VXLAN rides over any IP network.
+
+**Why you'd want it:** VMs can migrate between sites **without changing IP**, and a multi-tenant cloud needs millions of isolated segments.
+
+**The costs:**
+
+- About **50 bytes of encapsulation** per frame, which causes MTU issues.
+- Broadcast, unknown-unicast and multicast traffic (ARP, for example) must be carried between sites.
+- The VTEPs must keep state.
+
+**EVPN** uses BGP to distribute MAC reachability, so the network does not have to flood-and-learn across the WAN.
+
+★ **Related compre question (C23 Q7, 5 marks):** "Following is the physical network topology: A — B — C — D. I want to create a virtual network topology in which A and D are neighbours of each other. How will it get implemented with network virtualization? Explain with packet headers."
+
+**Tunnel it.** A's frame for D (inner header: src A, dst D) is **encapsulated** in an outer header addressed from A's tunnel endpoint to D's. B and C forward using **only the outer header**. D **decapsulates** and sees the inner frame exactly as A sent it, so A and D behave as one-hop neighbours. His word for it is "a **wormhole**": the packet goes into the tunnel at A and pops out at D unchanged. VXLAN and GRE (his EGRE example) are two instances of this.
+
+### 8.6 Scenario questions in his style
+
+**Q1.** "A professor moves to an office in the EE building but must stay on the CS network. (a) How, without new cabling? (3) (b) State the conditions. (1)"
+
+- (a) Assign the **new office's switch port** to the **CS VLAN**. The EE-building switch reaches the CS switches over an **802.1Q trunk**, so the professor's frames are tagged with the CS VLAN ID and delivered only to CS ports. The professor stays in the CS broadcast domain and subnet and keeps the same IP.
+- (b) **Conditions:** both buildings' switches are managed, 802.1Q-capable and trunked to each other. The CS VLAN is allowed on that trunk.
+
+**Q2.** "I split CS and EE into two VLANs on one switch. Now a CS laptop cannot print to the EE printer. (a) Why? (2) (b) How do I allow just this, and nothing else? (3)"
+
+- (a) VLANs are separate **broadcast domains**. The laptop's ARP for the printer, or its frames, never reach EE ports, and **inter-VLAN forwarding needs routing**.
+- (b) Add a **router or L3 switch** with an interface (or sub-interface on the trunk) in each VLAN as their gateways, and give the two VLANs **different subnets**. Put an **ACL** on it permitting only the CS subnet to the printer's IP on the print port, with deny as the default. **Conditions:** the hosts' default gateways point at the router, and all traffic between the VLANs goes through it.
+
+**Q3.** "We have data centres in Goa and Hyderabad joined over the Internet, and I want VMs to migrate between them without changing IP. (a) What do I use, and how? (3) (b) Why not just extend a VLAN? (1) (c) What does it cost? (2)"
+
+- (a) **VXLAN**. **VTEPs** at each site encapsulate the Ethernet frame in **UDP/IP** with a **VNI** identifying the tenant segment. The VM's L2 segment is stretched across the sites, so it keeps its IP and MAC.
+- (b) A VLAN **cannot cross an L3 network**, and there are only 4094 IDs.
+- (c) Encapsulation **overhead** of about 50 bytes, which means MTU tuning; broadcast and ARP traffic carried across the WAN; VTEP state; and the **extra latency** of the WAN for traffic that used to be local. **Conditions:** IP reachability between the VTEPs, and an underlay MTU big enough for the extra headers.
+
+**Interview link:** VXLAN is the default overlay under Kubernetes CNIs (Flannel's vxlan mode, Calico's VXLAN) and under cloud VPCs. 802.1Q trunks and inter-VLAN routing are everyday material in infra and SRE interviews.
+
+**Read:** K6 p73–80; 29 Aug 2023 class notes. K8e §6.4.4 pp.497–501 (802.1Q pp.499–500). P&D §3.1.4, "Virtual LANs" pp.201–202. Tan §4.8.5 pp.342–349. Tunnelling: Tan §5.5.3 p.429. RFC 7348 §§1–5 for VXLAN.
+
+**Notion check:** "VLANs help to create multiple subnets" is imprecise. A VLAN creates a separate **broadcast domain**. IP subnets are assigned per VLAN by convention, and VLAN membership is independent of IP, which is exactly why C25 Q6 works.
+
+## Chapter 9 — MANET: OLSR and AODV (may be examined)
+
+**May be examined.** MANET is the module after VLAN in his order, and it is the swing topic. In 25-26 the cut fell after it, and OLSR and AODV took **12 of 30** midsem marks (M25 Q1 and Q2). In 24-25 the cut fell before it. There is no slide deck, so this chapter is built from the 25-26-era class material in the Notion notes, the M25, C24 and C25 questions, and Tanenbaum. If he starts MANET before 5 Oct, treat it as top-tier.
+
+In a mobile ad hoc network every node is **both host and router**. Links are wireless, and the topology changes as nodes move. The two protocols attack the cost of routing from opposite ends:
+
+- **OLSR (proactive)** keeps a map all the time, but floods it cheaply through a few designated relays.
+- **AODV (reactive)** keeps nothing until it needs a route, then finds one by flooding and uses **sequence numbers** to know which answer is fresh.
+
+### 9.1 Why ad hoc routing is hard
+
+Nodes may be rescuers at an earthquake site, vehicles on a battlefield or ships at sea (Tan p.389). Compared with wired routing:
+
+- **The topology is dynamic.** Nodes move, appear and vanish, so routes become invalid without warning.
+- **Links are wireless.** Capacity and error rates vary. There is **interference**: a packet B is forwarding to C competes with A's new packet to B.
+- **There are many redundant links**, so naive flooding repeats information many times.
+- **Power and security:** batteries are limited, and eavesdropping, spoofing and DoS are easier.
+
+A MANET routing protocol must **discover** a path, **maintain** it, and define how routing information is **exchanged**. It can be **proactive** (OLSR) or **reactive** (AODV).
+
+### 9.2 His routing taxonomy
+
+**His line:** "Routing is not about reaching the destination, it's about reaching the destination with optimization," i.e. the fewest hops, least time or least loss.
+
+| Style | Who decides the path | Needs | Cost |
+| --- | --- | --- | --- |
+| **Source routing** (the link-state family) | The source picks the whole path | Every node holds the **full map** | Map building is O(n²), because it is about links |
+| **Hop-by-hop** (the distance-vector family) | Each node picks only the next hop | A vector of distances, at most N−1 entries | O(N) per exchange |
+| **Virtual circuit** | A path is set up end to end in advance | Per-circuit state in every router | "Very costly" |
+
+In **link state**, nodes find neighbours with **hello** packets. They must also advertise the neighbour list, or C would never learn that A and B are connected. That repetition is what OLSR removes. You will not be asked to trace these algorithms (§ How to use this book). The correct pairing is **link state ↔ Dijkstra** and **distance vector ↔ Bellman–Ford**.
+
+### 9.3 OLSR: optimised link state
+
+**The problem with plain link state.** If A and B are neighbours, **both** A and B tell C about the A–B link, so the same information travels twice, and in a dense wireless mesh many times over. Ideally only one of them should say it. OLSR applies **two optimisations**:
+
+1. **Not everyone relays.** Only designated **multipoint relays (MPRs)** retransmit flooded messages.
+2. **Not every link is advertised.** A node advertises only its links to the nodes that chose it as their MPR.
+
+**HELLO messages.** Every node periodically **broadcasts** HELLO messages to its one-hop neighbours, listing its own neighbours. **HELLOs are not forwarded.** From the neighbours' lists, each node learns its **two-hop neighbourhood**.
+
+**MPR selection.** For node N, MPR(N) is a subset of N's one-hop neighbours chosen so that **every two-hop neighbour of N is a one-hop neighbour of some node in MPR(N)**. Pick it as small as you can. More than one valid set may exist, and each node computes its own.
+
+**Worked example (his graph):** the edges are 4–1, 4–3, 4–5, 4–6, 1–2, 3–2 and 6–7.
+
+```mermaid
+flowchart LR
+  n2((2)) --- n1((1))
+  n2 --- n3((3))
+  n1 --- n4((4))
+  n3 --- n4
+  n4 --- n5((5))
+  n4 --- n6((6))
+  n6 --- n7((7))
+```
+
+- For node 4, the one-hop neighbours are {1, 3, 5, 6} and the two-hop neighbours are {2, 7}.
+- Node 2 is reachable via 1 or 3. Node 7 is reachable **only via 6**.
+- So **MPR(4) = {3, 6}**, or equally {1, 6}. {3} alone misses 7, {6} alone misses 2, and {1, 5} fails because 7 is not a neighbour of 5.
+
+**MS set (MPR selector set).** MS(X) is the set of nodes that chose X as an MPR. It is "second-order information": the MPRs are computed first, and the MS sets follow. In this graph, every other neighbour of 4 needs 4 to reach its own two-hop neighbours, so MPR(1) = MPR(3) = MPR(5) = MPR(6) = {4} and **MS(4) = {1, 3, 5, 6}**. MPR(7) = {6}, so MS(6) = {4, 7}. MPR(2) is {1} or {3}.
+
+**Topology control (TC) messages.** A TC message carries the **advertised neighbours**, which are the node's MS set, plus a **sequence number**, so that stale topology is never used. Two rules follow:
+
+- **Only nodes with a non-empty MS set generate TC messages.**
+- TC messages are flooded, but **a node retransmits one only if the neighbour it received it from has chosen it as an MPR**, i.e. that neighbour is in its MS set.
+
+Every node *processes* every TC message it receives and computes its routes over this reduced topology plus its own neighbours. That is enough, because shortest paths can always be routed through MPRs.
+
+★ **Exam (M25 Q1, 2 + 2 + 2):** "In the case of OLSR: (a) When will a node not generate a topology control message? (b) When will a node not mention a link in its TC message? (c) Mention the MPR set of each node for the topology A—B." The scored script got 6 of 6.
+
+- **(a)** When its **MS set is empty**, i.e. no neighbour selected it as an MPR. In the graph above, nodes 5 and 7 (and whichever of 1 or 3 node 2 did not choose) send no TC.
+- **(b)** A node does not mention its link to neighbour X when **X is not in its MS set**, i.e. X did not choose it as an MPR. If node 2 chose 1, then node 3's TC omits the link 3–2.
+- **(c)** **MPR(A) = ∅ and MPR(B) = ∅.** Neither has a two-hop neighbour, so there is nothing to cover. It follows that both MS sets are empty and **no TC messages are sent at all**. HELLOs are enough.
+
+★ **Exam (C24 Q3 (a)(b), 2 + 2):** "When will a node's multipoint relay selector set be empty? When will a node's multipoint relay set be empty?"
+
+- **MS set empty:** **no neighbour chose it as an MPR**, because it is not needed to reach anyone's two-hop neighbours. Examples are a leaf node (5 or 7 above), or a node whose neighbours are all covered by other relays.
+- **MPR set empty:** the node has **no two-hop neighbours**. Examples are a two-node network (A—B), a **clique** where every node is a one-hop neighbour of every other, and an isolated node. The scored script gave only "no nodes in range" and "two nodes" and got 1 of 2. Add the clique case.
+
+### 9.4 AODV: ad hoc on-demand distance vector
+
+AODV is **reactive**. A node does no route discovery or maintenance until it needs a route, and nodes not on active paths keep no routing state. It is **hop-by-hop**: each node stores only the next hop for each destination. **Local HELLO messages** track which neighbours are still there.
+
+**Each node keeps two counters (his emphasis):** its **sequence number** and its **broadcast ID**.
+
+**Route discovery:**
+
+1. The source S broadcasts a **ROUTE REQUEST (RREQ)** containing ⟨source address, **source sequence number**, **broadcast ID**, destination address, **destination sequence number** (the last one S knew), **hop count**⟩.
+2. Each node that hears it checks **(source address, broadcast ID)**. If it has seen that pair before, it **discards the duplicate**. Otherwise it records a **reverse route to S**: the neighbour it heard the RREQ from, with the hop count. It then increments the hop count and rebroadcasts.
+3. The destination, or an intermediate node whose route to the destination has a destination sequence number **at least as large** as the one requested, sends a **ROUTE REPLY (RREP)**. The RREP travels **unicast** back along the reverse route.
+4. Each node the RREP passes sets up its **forward route** to the destination, with next hop = the neighbour the RREP came from.
+
+So AODV **establishes the reverse route before the forward route**.
+
+**His answer (vs Tanenbaum):** the **broadcast ID**, together with the source address, identifies one flood and **suppresses duplicates**. **Sequence numbers measure freshness**: a higher number means newer information about that node. Tan p.390 says a "sequence number set at the source" weeds out duplicates. Write his split: broadcast ID for duplicates, sequence number for freshness.
+
+**Choosing between routes:** **compare sequence numbers first**, and prefer the higher one. **Only when they are equal, use hop count**, and prefer fewer hops. The destination sequence number is controlled by the destination and works like a logical clock (Tan pp.391–392). That stops a node from mistaking an old, invalid route for a new one, which is distance vector's count-to-infinity problem.
+
+**Route maintenance.** When a HELLO goes unanswered, or a forward to a neighbour fails, the node knows the link is broken. It tells its **active neighbours** that routes through it are invalid, they purge them, and the source rediscovers. To limit flooding, a source can use an **expanding-ring search**, sending the RREQ with TTL = 1, then 2, 3 and so on (Tan p.391).
+
+★ **Exam (M25 Q2, 3 + 3):** "(a) If a node receives two RREQ messages with the same broadcast ID but different source sequence numbers, how will the node process those two messages for the purpose of deciding the route to the source? (b) If the messages have the same broadcast ID and the same sequence number, how will the node process the two messages?"
+
+- **(a)** The **source sequence number** is the **freshness** of the information about the source. The node keeps or updates its **reverse route to the source** from the RREQ with the **higher** source sequence number, and **discards the lower** one as stale. The scored script said exactly this and got 3 of 3.
+- **(b)** These are **the same RREQ arriving over two paths**, a duplicate. It is rebroadcast only once. For the reverse route to the source the freshness is equal, so the tie-break is **hop count**: keep or switch to the copy with the **fewer hops**, and drop the other. The scored script omitted "hop count", and he wrote it in the margin and gave 1.5 of 3.
+
+★ **Exam (C24 Q3(c), 2 marks):** "What will the node do if it receives a route request with a destination sequence number less than the one it has?" Its own route to the destination is **fresher** than the one the source asked for, so as an intermediate node it can **answer with a RREP itself**, unicast back along the reverse route, instead of rebroadcasting. **Condition:** its route is still valid (active). This scored 2 of 2.
+
+★ **Exam (C25 Q4):** "Why is the sequence number used in the route request message of the AODV protocol?" There are two reasons:
+
+1. The **destination sequence number** in the RREQ asks for a route **at least as fresh** as the last one the source knew. Intermediate nodes may reply only if their route is that fresh, so **stale routes and loops** are rejected.
+2. The **source sequence number** marks the freshness of the **reverse route** the RREQ creates.
+
+The scored answer: "higher sequence number means more fresh data", with the rule Sₙ ≥ Sₒ → accept, else discard.
+
+**Also on the handout (module 3), not in any paper:** **DSR** is reactive **source routing**: the whole path is carried in the packet header and cached. **DSDV** is proactive distance vector with destination sequence numbers, and is AODV's ancestor. **ZRP** is a hybrid: proactive inside a zone of radius r, reactive beyond it.
+
+### 9.5 OLSR vs AODV
+
+|  | OLSR | AODV |
+| --- | --- | --- |
+| Type | Proactive (link state) | Reactive (distance vector) |
+| State | Partial topology at every node, always | Only routes in use |
+| Overhead | Constant HELLO and TC traffic, cut down by MPRs | Floods only on demand, plus HELLOs |
+| First-packet latency | Low: the route already exists | Higher: discovery first |
+| Suits | Dense networks with steady, many-to-many traffic | Sparse traffic, high mobility, low power |
+| Freshness | Sequence number in each TC message | Source and destination sequence numbers |
+
+### 9.6 Scenario questions in his style
+
+**Q1.** "After an earthquake I deploy 30 radios among rescue teams with no infrastructure. Traffic is occasional, and teams move constantly. (a) OLSR or AODV? (2) (b) Why? (3) (c) Under what condition would you switch? (1)"
+
+- (a) **AODV.**
+- (b) It is **reactive**: nodes spend no bandwidth or battery keeping routes to destinations nobody is using. With constant movement, OLSR's proactive map would be refreshed with **HELLO and TC** floods that go stale quickly anyway. AODV's **sequence numbers** make sure a freshly discovered route beats a stale one.
+- (c) Switch to **OLSR** if traffic becomes frequent and many-to-many, so that discovery latency dominates. **Conditions:** links are symmetric, and nodes are in range of at least one neighbour.
+
+**Q2.** "In my OLSR network node 5 has never sent a TC message. Is it broken? (2)"
+
+Not necessarily. A node sends TC messages **only if its MS set is non-empty**. If no neighbour selected 5 as an **MPR** (for example, 5 is a leaf, or others cover its neighbours' two-hop sets), then 5 has nothing to advertise. It is still sending **HELLOs**. **Condition:** 5's HELLOs are being heard, so its neighbours do know it exists.
+
+**Q3.** "My AODV node picked a route to D with 6 hops over one with 3 hops. Why? (2)"
+
+The 6-hop route carries a **higher destination sequence number**, so it is **fresher**. AODV compares **sequence numbers first** and uses **hop count only as a tie-break**. The 3-hop route may already be broken. **Condition:** both routes are to the same destination, and the higher number was issued by D itself.
+
+**Interview link:** AODV's rule, "freshest sequence number wins, then shortest", is the same logic as Raft terms and logical clocks: a newer epoch beats a better-looking but stale claim. OLSR's MPRs are fan-out reduction, like the relay choice in gossip protocols.
+
+**Read:** the Notion MANET pages (25-26-era lectures), corroborated below. Tan §5.2.11 pp.389–392 (AODV discovery and maintenance); §5.2.3 p.368 (flooding); §§5.2.4–5.2.5 pp.370–378 (DV and LS background). P&D pp.133–134 (mesh/ad hoc). K7 p9 (ad hoc networks). RFC 3626 §3 (OLSR) and RFC 3561 §§1–6 (AODV) if you want the real field names. Tanenbaum's MANET chapter is not yet in your textbook index, so the pages above come from the PDF.
+
+**Notion check:**
+
+- The notes pair **link state with Bellman–Ford** and **distance vector with Dijkstra**. That is inverted: link state uses Dijkstra, and distance vector uses Bellman–Ford. Keep his source-routing vs hop-by-hop taxonomy, and drop the pairing.
+- "OLSR: Optimal link state" should be **Optimized** Link State Routing. The notes also call OLSR both "hop-by-hop" and "source routing". It is link state (full-map computation), and packets are still forwarded hop by hop from the computed table.
+- "A node forwards a TC only if the sender is one of its MPRs" is backwards. It forwards only if the sender **selected it** as an MPR, i.e. the sender is in its **MS set**.
+- "If sequence numbers are the same, discard" is loose. Duplicates are identified by **(source, broadcast ID)**, and equal sequence numbers fall back to **hop count**.
+
+## Appendix — Past-paper index
+
+This appendix lists every midsem question from the last three years, and every compre question on a midsem topic, with the section of this book that answers it. NAT and the link layer appear in all three midsems. PHY and mobility appear in two. MANET appears in one, but it took 12 marks.
+
+| Paper | Q | Marks | Question (short) | Answered in |
+| --- | --- | --- | --- | --- |
+| M25 (6 Oct 2025) | 1 | 2+2+2 | OLSR: when no TC; when a link is omitted; MPR sets for A—B | §9.3 |
+| M25 | 2 | 3+3 | AODV: two RREQs with the same broadcast ID and different, then equal, sequence numbers | §9.4 |
+| M25 | 3 | 2+4 | Mobility in the same network with no routing device: conditions, setup, protocol | §1.6 |
+| M25 | 4 | 2+2+2 | NAT rows: same private port / same public port / same global and local IP | §3.3 |
+| M25 | 5 | 2+2+2 | Two joined networks: what differs, the joining device's task, how to stop traffic | §1.7 |
+| M24 (5 Oct 2024) | 1 | 3+3 | Keep two privileged users' headers and payload private on a shared network | §8.4 |
+| M24 | 2 | 3+3 | Two scenarios in which a switch's input buffer fills | §2.4 |
+| M24 | 3 | 3+3+2 | Why not a random public IP; three ways to keep one IP anywhere; which doesn't scale | §5.3 |
+| M24 | 4 | 2+2+2 | Higher rate: effect in the frequency domain; effect of noise; condition | §6.5 |
+| M24 | 5 | 6 | One public IP, many machines: how are packets modified? | §3.3 |
+| M23 (9 Oct 2023) | 1 | 6 | Same-subnet delivery using network addresses | §1.3 |
+| M23 | 2 | 6 | Why NAT breaks P2P | §3.5 |
+| M23 | 3 | 6 | Pros and cons of direct routing in mobile networks | §5.6 |
+| M23 | 4 | 6 | Receiver limited to 10 MHz: why the rate can't keep rising | §6.5 |
+| M23 | 5 | 8 | Bandwidth larger than the coherence bandwidth: how to transmit | §7.7 |
+| C25 (12 Dec 2025) | 2 | 6 | More surfaces over a long range: why data loss rises | §6.3 |
+| C25 | 3 | 6 | Why many slow subcarriers lose less data than one fast carrier | §7.7 |
+| C25 | 4 | — | Why AODV RREQs carry sequence numbers | §9.4 |
+| C25 | 5 | 4 | Why NAT fails for WAN-initiated connections | §3.5 |
+| C25 | 6 | 4 | Split a subnet so that alternate IPs share a network; condition | §8.4 |
+| C24 (6 Dec 2024) | 3 | 2+2+2 | When the MS set / MPR set is empty; RREQ with a lower destination sequence number | §9.3, §9.4 |
+| C24 | 8 | 4 | Packet duration smaller than coherence time | §7.9 |
+| C24 | 9 | 4 | Doubling a NAT's external IPs | §3.4 |
+| C24 | 10 | 4 | Correct the Wireshark / IP-decryption quote | §1.4 |
+| C23 (9 Dec 2023) | 4 | 2+1 | Symbol duration shorter than the delay spread | §7.6 |
+| C23 | 5 | 3 | Why a NAT gateway caps concurrent users | §3.4 |
+| C23 | 6 | 3 | Infinite switch buffer, yet reliability falls as nodes grow | §1.5 |
+| C23 | 7 | 5 | Virtual topology in which A and D are neighbours (tunnelling), with headers | §8.5 |
+
+**Post-midsem compre questions, not covered here:** C25 Q1 (DNS and certificates), Q7 (congestion control over LEO), Q8 (LLM-training parallelism). C24 Q1 (routing with software-assigned MACs in a data centre), Q2 (SSL keys and replay), Q4–Q7 (paper questions). C23 Q1–Q3 (paper questions), Q8 (removing IP overhead in a data centre), Q9 (integrity without signing overhead). These come from SDN, security and the paper presentations, which he teaches after the midsem.
+
+**How to use this table in the last three days:** answer every M row closed book against the clock, at 3 minutes per mark, using the answer template from How to use this book. Then check against the section listed. Any row where you left out a **Conditions:** line counts as a lost mark.
